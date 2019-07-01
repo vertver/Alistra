@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="entry_point.c" />
+    <ClCompile Include="Base_Entry.c" />
+    <ClCompile Include="Base_GL.c">
+      <Filter>Render and window</Filter>
+    </ClCompile>
+    <ClCompile Include="Base_Window.c">
+      <Filter>Render and window</Filter>
+    </ClCompile>
+    <ClCompile Include="Base_Sound.c">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="Base_Thread.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Base.h" />
+    <ClInclude Include="Base_Render.h">
+      <Filter>Render and window\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Base_Window.h">
+      <Filter>Render and window\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="glcorearb.h">
+      <Filter>Render and window\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Base_Sound.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="Base_Thread.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Render and window">
+      <UniqueIdentifier>{d56bc483-fc07-4651-a3bb-23f08c6f3c48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render and window\headers">
+      <UniqueIdentifier>{2a3bd46c-4749-42f3-824c-ecbae5854307}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound">
+      <UniqueIdentifier>{98deccbb-011c-469c-a479-59a857aa1943}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
