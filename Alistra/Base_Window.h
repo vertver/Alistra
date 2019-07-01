@@ -7,3 +7,6 @@ HWND CreateMainWindow();
 void DestroyMainWindow();
 
 void MainWindowLoop();
+
+void MainWindowDestroyEvent();
+void SetInitedEvent();

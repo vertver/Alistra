@@ -28,10 +28,11 @@ typedef struct
 	char szGUID[256];
 } SOUNDDEVICE_INFO;
 
-boolean InitSound();
+boolean InitSound(char* OutputId, char* InputId);
 void DestroySound();
 
-boolean PlayAudio(char* DeviceId, DWORD dwSamples);
+boolean PlayAudio();
 boolean StopAudio();
 
-boolean EnumerateSoundDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCount);
+boolean EnumerateInputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCount);
+boolean EnumerateOutputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCount);

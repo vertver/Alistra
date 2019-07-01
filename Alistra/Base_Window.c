@@ -103,6 +103,22 @@ CustomWindowProc(
 	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
+void DestroyMainWindow()
+{
+	/*
+		We can't destroy NULL or invalid handle, right?
+	*/
+	if (MainHWND != NULL && MainHWND != INVALID_HANDLE_VALUE)
+	{
+		DestroyRender();
+		DestroyWindow(MainHWND);
+		UnregisterClassW(L"ALISTRA_WINDOW", GetModuleHandle(0));
+
+		if (hCloseEvent && hCloseEvent != INVALID_HANDLE_VALUE) CloseHandle(hCloseEvent);
+		if (hWaitForInit && hWaitForInit != INVALID_HANDLE_VALUE) CloseHandle(hWaitForInit);
+	}
+}
+
 void 
 CreateWindowProc(void* pParams)
 {
@@ -135,6 +151,14 @@ CreateWindowProc(void* pParams)
 		NULL, NULL, wc.hInstance, NULL
 	);
 
+	if (!wnd) ExitProcess(-132);
+
+	if (!InitRender(false))
+	{
+		MessageBoxW(NULL, L"Can't init render system", L"ЕГГОГ", MB_OK | MB_ICONHAND);
+		return -1;
+	}
+
 	MainHWND = wnd;
 
 	/*
@@ -164,6 +188,9 @@ CreateWindowProc(void* pParams)
 
 		Sleep(4);
 	}
+
+	DestroyMainWindow();
+	MainHWND = NULL;
 }
 
 HWND GetMainWindowHandle()
@@ -194,21 +221,6 @@ HWND CreateMainWindow()
 	}
 
 	return MainHWND;
-}
-
-void DestroyMainWindow()
-{
-	/*
-		We can't destroy NULL or invalid handle, right?
-	*/
-	if (MainHWND != NULL && MainHWND != INVALID_HANDLE_VALUE)
-	{
-		DestroyWindow(MainHWND);
-		UnregisterClassW(L"ALISTRA_WINDOW", GetModuleHandle(0));
-
-		if (hCloseEvent && hCloseEvent != INVALID_HANDLE_VALUE) CloseHandle(hCloseEvent);
-		if (hWaitForInit && hWaitForInit != INVALID_HANDLE_VALUE) CloseHandle(hWaitForInit);
-	}
 }
 
 void MainWindowLoop()

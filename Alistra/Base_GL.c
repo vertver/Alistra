@@ -2,6 +2,9 @@
 #include "Base_Window.h"
 #include "Base_Render.h"
 
+// it is never ImGui
+boolean bImgui = false;
+
 typedef BOOL(WINAPI* wglMakeCurrent_type)(HDC, HGLRC);
 typedef BOOL(WINAPI* wglDeleteContext_type)(HGLRC);
 typedef PROC(WINAPI* wglGetProcAddress_type)(LPCSTR);
@@ -471,6 +474,26 @@ InitRender(
 	char IsImgui
 )
 {
+	PIXELFORMATDESCRIPTOR pfd =
+	{
+		sizeof(PIXELFORMATDESCRIPTOR),
+		1,
+		PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,    // Flags
+		PFD_TYPE_RGBA,        // The kind of framebuffer. RGBA or palette.
+		32,                   // Colordepth of the framebuffer.
+		0, 0, 0, 0, 0, 0,
+		0,
+		0,
+		0,
+		0, 0, 0, 0,
+		24,                   // Number of bits for the depthbuffer
+		8,                    // Number of bits for the stencilbuffer
+		0,                    // Number of Aux buffers in the framebuffer.
+		PFD_MAIN_PLANE,
+		0,
+		0, 0, 0
+	};
+
 	hDC = GetDC(GetMainWindowHandle());
 
 	if (!pwglCreateContext) 
@@ -491,17 +514,19 @@ InitRender(
 		if (!pwglMakeCurrent) return 0;
 	}
 
+	SetPixelFormat(hDC, ChoosePixelFormat(hDC, &pfd), &pfd);
+
 	hGLRC = pwglCreateContext(hDC);
 	pwglMakeCurrent(hDC, hGLRC);
 
-	return 0;
+	return true;
 }
 
 void 
 DestroyRender()
 {
-	pwglMakeCurrent(NULL, NULL);
-	pwglDeleteContext(hGLRC);
+	if (pwglMakeCurrent) pwglMakeCurrent(NULL, NULL);
+	if (pwglDeleteContext) pwglDeleteContext(hGLRC);
 	hGLRC = NULL;
 
 	ReleaseDC(GetMainWindowHandle(), hDC);
