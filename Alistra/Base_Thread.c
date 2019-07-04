@@ -1,7 +1,7 @@
 #include "Base_Thread.h"
 
 DWORD
-OMCThreadFunc(
+AlistraThreadFunc(
 	void* pArgs
 )
 {
@@ -34,7 +34,7 @@ BaseCreateThread(
 
 	threadInfo->pFunc = pFunc;
 
-	hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)OMCThreadFunc, threadInfo, 0, &threadInfo->ThreadId);
+	hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)AlistraThreadFunc, threadInfo, 0, &threadInfo->ThreadId);
 
 	/*
 		Waiting for terminating of our thread or struct

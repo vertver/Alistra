@@ -1,12 +1,11 @@
 #include "Base_Sound.h"
+#include "Base_Thread.h"
 #include <functiondiscoverykeys.h>
 #include <audiopolicy.h>
 #include <AudioClient.h>
 #include <initguid.h>
 #include <mmdeviceapi.h>
 #include <endpointvolume.h>
-
-#define   _RELEASE(p)                       { if(p){(p->lpVtbl)->Release(p); (p)=NULL;} }
 
 #ifndef _AVRT_ 
 typedef enum _AVRT_PRIORITY
@@ -18,25 +17,14 @@ typedef enum _AVRT_PRIORITY
 } AVRT_PRIORITY, *PAVRT_PRIORITY;
 #endif
 
-#ifndef GUID_SECT
-#define GUID_SECT
-#endif
-
 #define _GetProc(fun, type, name)  {                                                        \
                                         fun = (type) GetProcAddress(hDInputDLL,name);       \
-                                        if (fun == NULL) {                                  \
+                                        if (fun == NULL)									\
+										{													\
+											DestroySound();									\
                                             return false;                                   \
                                         }                                                   \
                                     }                                                       \
-
-
-#define __DEFINE_GUID(n,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8) static const GUID n GUID_SECT = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
-#define __DEFINE_IID(n,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8) static const IID n GUID_SECT = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
-#define __DEFINE_CLSID(n,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8) static const CLSID n GUID_SECT = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
-#define DEFINE_CLSID(className, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
-    __DEFINE_CLSID(A_CLSID_##className, 0x##l, 0x##w1, 0x##w2, 0x##b1, 0x##b2, 0x##b3, 0x##b4, 0x##b5, 0x##b6, 0x##b7, 0x##b8)
-#define DEFINE_IID(interfaceName, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
-    __DEFINE_IID(A_IID_##interfaceName, 0x##l, 0x##w1, 0x##w2, 0x##b1, 0x##b2, 0x##b3, 0x##b4, 0x##b5, 0x##b6, 0x##b7, 0x##b8)
 
 // "1CB9AD4C-DBFA-4c32-B178-C2F568A703B2"
 DEFINE_IID(IAudioClient, 1cb9ad4c, dbfa, 4c32, b1, 78, c2, f5, 68, a7, 03, b2);
@@ -65,9 +53,13 @@ typedef HANDLE	(WINAPI *FAvSetMmThreadCharacteristics)		(LPCSTR, LPDWORD);
 typedef BOOL	(WINAPI *FAvRevertMmThreadCharacteristics)	(HANDLE);
 typedef BOOL	(WINAPI *FAvSetMmThreadPriority)			(HANDLE, AVRT_PRIORITY);
 
-static HMODULE hDInputDLL = 0;
+HMODULE hDInputDLL = 0;
+HANDLE hMMCSS = NULL;
+HANDLE hWasapiCloseEvent = NULL;
+HANDLE hWasapiThreadEvent = NULL;
+HANDLE hSoundWorkEnded = NULL;
 
-FAvSetMmThreadCharacteristics    pAvSetMmThreadCharacteristics = NULL;
+FAvSetMmThreadCharacteristics    pAvSetMmThreadCharacteristicsA = NULL;
 FAvRevertMmThreadCharacteristics pAvRevertMmThreadCharacteristics = NULL;
 FAvSetMmThreadPriority           pAvSetMmThreadPriority = NULL;
 
@@ -85,33 +77,172 @@ typedef struct
 	IAudioCaptureClient* pCaptureClient;
 	IAudioRenderClient* pRenderClient;
 
+	float* pInputBuffer;
+	float* pOutputBuffer;
+
 	size_t Flags;
 } WASAPI_DEVICES;
 
 WASAPI_DEVICES InitedDevices;
 
-typedef enum WasapiFlags
+typedef enum
 {
 	eNone = 0,
 	eEnableInputRecord = 1 << 1
-};
+} WasapiFlags;
 
-const TIME_INTERVAL Ring09_Intervals[] =
+__forceinline
+DWORD
+GetSleepTime(
+	DWORD Frames,
+	DWORD SampleRate
+)
 {
-	{ 65671, 76777 },		// Piano, F4
-	{ 110677, 120487 }		// Piano, E3
-};
+	REFERENCE_TIME Duration;
+	if (!SampleRate) return 0;
 
-const TIME_INTERVAL Ring02_Intervals[] =
+	Duration = (REFERENCE_TIME)(10000000.0 * Frames / SampleRate);
+	return (DWORD)(Duration / 200000);
+}
+
+boolean
+SoundWorkerIsEnded()
 {
-	{ 19028, 24499 },		// Arp, C5
-	{ 25342, 30774 },		// Arp, A4
-	{ 25342, 36299 },		// Arp, A4-F4-E4
-	{ 36030, 47322 },		// Arp, A3-F4-E4
-	{ 25342, 47322 }		// Arp, A4-F4-E4 + delay 
-};
+	return (WaitForSingleObject(hSoundWorkEnded, 0) == WAIT_OBJECT_0);
+}
 
-boolean InitSound(
+
+void
+SoundWorkerProc( 
+	void* pParams
+)
+{
+	boolean* pIsDone = (void*)pParams;
+
+	/*
+		Process all sound by sound worker
+	*/
+	*pIsDone = ProcessSoundWorker(InitedDevices.pOutputDeviceInfo);
+
+	SetEvent(hSoundWorkEnded);
+}
+
+boolean
+CreateSoundWorker(
+	boolean* pIsDoneBool
+)
+{
+	THREAD_INFO thInfo;
+	memset(&thInfo, 0, sizeof(THREAD_INFO));
+
+	thInfo.pArgs = (void*)pIsDoneBool;
+
+	return !!BaseCreateThread(SoundWorkerProc, &thInfo, false);
+}
+
+void
+WasapiThreadProc(
+	void* pParams
+)
+{
+	/*
+		Set AVRT for WASAPI playing thread
+	*/
+	DWORD dwTask = 0;
+	hMMCSS = pAvSetMmThreadCharacteristicsA("Audio", &dwTask);
+	if (!hMMCSS || FAILED(pAvSetMmThreadPriority(hMMCSS, AVRT_PRIORITY_CRITICAL)))
+	{
+		return;
+	}
+
+	/*
+		Update WASAPI buffer while close event not setted 
+	*/
+	while (WaitForSingleObject(hWasapiCloseEvent, 0) != WAIT_OBJECT_0)
+	{
+		__try
+		{
+			DWORD NeedyFrames = InitedDevices.pOutputDeviceInfo->Fmt.Frames;
+			UINT32 StreamPadding = 0;
+			HRESULT hr = 0;
+			BYTE* pByte = NULL;
+
+			while (NeedyFrames)
+			{
+				/*
+					Get count of samples who can be updated now
+				*/
+				hr = InitedDevices.pOutputClient->lpVtbl->GetCurrentPadding(InitedDevices.pOutputClient, &StreamPadding);
+				if (FAILED(hr)) { return; }
+
+				INT32 AvailableFrames = InitedDevices.pOutputDeviceInfo->Fmt.Frames;
+				AvailableFrames -= StreamPadding;
+				AvailableFrames = abs(AvailableFrames);
+
+				if (!AvailableFrames)
+				{
+					/*
+						Sleep a 1/2 of all buffer samples time
+					*/
+					DWORD dwSleep = GetSleepTime(NeedyFrames, InitedDevices.pOutputDeviceInfo->Fmt.SampleRate);
+					dwSleep /= 2;
+					Sleep(dwSleep);
+					continue;
+				}
+
+				if (AvailableFrames > (INT32)NeedyFrames) { AvailableFrames = NeedyFrames; }
+
+				/*
+					In this case, "GetBuffer" function can be failed if 
+					buffer length is too much for us
+				*/
+				hr = InitedDevices.pRenderClient->lpVtbl->GetBuffer(InitedDevices.pRenderClient, AvailableFrames, &pByte);
+				if (SUCCEEDED(hr) && pByte)
+				{
+					/*
+						Process soundworker and copy data to main buffer
+					*/
+					SoundWorker((float*)pByte, AvailableFrames);
+				}
+				else
+				{
+					/*
+						Don't try to destroy device if the buffer is unavailable
+					*/
+					if (hr == AUDCLNT_E_BUFFER_TOO_LARGE) { continue; }
+
+					goto EndFuck;
+				}
+
+				/*
+					If we can't release buffer - close invalid host
+				*/
+				hr = InitedDevices.pRenderClient->lpVtbl->ReleaseBuffer(InitedDevices.pRenderClient, AvailableFrames, 0);
+				if (FAILED(hr))
+				{
+					goto EndFuck;
+				}
+
+				NeedyFrames -= AvailableFrames;
+			}
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER)
+		{
+			/*
+				We can't do anything, just close the audio device
+			*/
+			goto EndFuck;
+		}
+	}
+
+EndFuck:
+	DestroySoundWorker();
+	if (hMMCSS) pAvRevertMmThreadCharacteristics(hMMCSS);
+	SetEvent(hWasapiThreadEvent);
+}
+
+boolean
+InitSound(
 	char* OutputId,
 	char* InputId
 )
@@ -124,6 +255,10 @@ boolean InitSound(
 	IAudioClient* pTempInputClient = NULL;
 	IAudioClient* pTempOutputClient = NULL;
 	HRESULT hr = 0;
+
+	hWasapiThreadEvent = CreateEventA(NULL, FALSE, FALSE, NULL);
+	hWasapiCloseEvent = CreateEventA(NULL, FALSE, FALSE, NULL);
+	hSoundWorkEnded = CreateEventA(NULL, FALSE, FALSE, NULL);
 
 	if (InitedDevices.pInputDeviceInfo)
 	{
@@ -165,7 +300,7 @@ boolean InitSound(
 		/*
 			Load proc for AVRT, because we don't want to link at this
 		*/
-		_GetProc(pAvSetMmThreadCharacteristics, FAvSetMmThreadCharacteristics, "AvSetMmThreadCharacteristicsA");
+		_GetProc(pAvSetMmThreadCharacteristicsA, FAvSetMmThreadCharacteristics, "AvSetMmThreadCharacteristicsA");
 		_GetProc(pAvRevertMmThreadCharacteristics, FAvRevertMmThreadCharacteristics, "AvRevertMmThreadCharacteristics");
 		_GetProc(pAvSetMmThreadPriority, FAvSetMmThreadPriority, "AvSetMmThreadPriority");
 	}
@@ -291,8 +426,8 @@ boolean InitSound(
 			PropVariantClear(&value);
 			_RELEASE(pProperty);
 
-			InitedDevices.pOutputDeviceInfo->Fmt.Bits = waveFormat.wBitsPerSample;
-			InitedDevices.pOutputDeviceInfo->Fmt.Channels = waveFormat.nChannels;	
+			InitedDevices.pOutputDeviceInfo->Fmt.Bits = (BYTE)waveFormat.wBitsPerSample;
+			InitedDevices.pOutputDeviceInfo->Fmt.Channels = (BYTE)waveFormat.nChannels;	
 			InitedDevices.pOutputDeviceInfo->Fmt.SampleRate = waveFormat.nSamplesPerSec;
 			InitedDevices.pOutputDeviceInfo->Fmt.IsFloat = true;
 		}
@@ -338,8 +473,8 @@ boolean InitSound(
 			PropVariantClear(&value);
 			_RELEASE(pProperty);
 
-			InitedDevices.pInputDeviceInfo->Fmt.Bits = waveFormat.wBitsPerSample;
-			InitedDevices.pInputDeviceInfo->Fmt.Channels = waveFormat.nChannels;
+			InitedDevices.pInputDeviceInfo->Fmt.Bits = (BYTE)waveFormat.wBitsPerSample;
+			InitedDevices.pInputDeviceInfo->Fmt.Channels = (BYTE)waveFormat.nChannels;
 			InitedDevices.pInputDeviceInfo->Fmt.SampleRate = waveFormat.nSamplesPerSec;
 			InitedDevices.pInputDeviceInfo->Fmt.IsFloat = true;
 		}
@@ -467,8 +602,11 @@ boolean InitSound(
 	return true;
 }
 
-void DestroySound()
+void 
+DestroySound()
 {
+	StopAudio();
+
 	if (InitedDevices.pInputDeviceInfo)
 	{
 		HeapFree(GetProcessHeap(), 0, InitedDevices.pInputDeviceInfo);
@@ -487,19 +625,78 @@ void DestroySound()
 	_RELEASE(InitedDevices.pOutputClient);
 	_RELEASE(InitedDevices.pInputDevice);
 	_RELEASE(InitedDevices.pOutputDevice);
+
+	if (InitedDevices.pOutputBuffer)
+	{
+		HeapFree(GetProcessHeap(), 0, InitedDevices.pOutputBuffer);
+		InitedDevices.pOutputBuffer = NULL;
+	}
+
+	if (InitedDevices.pInputBuffer)
+	{
+		HeapFree(GetProcessHeap(), 0, InitedDevices.pInputBuffer);
+		InitedDevices.pInputBuffer = NULL;
+	}
+
+	if (hWasapiThreadEvent)
+	{
+		CloseHandle(hWasapiThreadEvent);
+		hWasapiThreadEvent = NULL;
+	}
+	if (hWasapiCloseEvent)
+	{
+		CloseHandle(hWasapiCloseEvent);
+		hWasapiCloseEvent = NULL;
+	}
+	if (hSoundWorkEnded)
+	{
+		CloseHandle(hSoundWorkEnded);
+		hSoundWorkEnded = NULL;
+	}
 }
 
-boolean PlayAudio()
+boolean 
+PlayAudio()
 {
+	THREAD_INFO thInfo;
+	memset(&thInfo, 0, sizeof(THREAD_INFO));
 
+	/*
+		Allocate buffers for WASAPI thread
+	*/
+	if (InitedDevices.pInputDeviceInfo)
+	{
+		HeapFree(GetProcessHeap(), 0, InitedDevices.pInputDeviceInfo);
+		InitedDevices.pInputDeviceInfo = NULL;
+	}
+
+	if (InitedDevices.pOutputDeviceInfo)
+	{
+		HeapFree(GetProcessHeap(), 0, InitedDevices.pOutputDeviceInfo);
+		InitedDevices.pOutputDeviceInfo = NULL;
+	}
+
+	InitedDevices.pOutputBuffer = HeapAlloc(GetProcessHeap(), 0, InitedDevices.pOutputDeviceInfo->Fmt.Frames * sizeof(float));
+
+	if (InitedDevices.pInputClient)
+	{
+		InitedDevices.pInputBuffer = HeapAlloc(GetProcessHeap(), 0, InitedDevices.pInputDeviceInfo->Fmt.Frames * sizeof(float));
+	}
+
+	return (!!BaseCreateThread(WasapiThreadProc, &thInfo, false));
 }
 
-boolean StopAudio()
+boolean 
+StopAudio()
 {
-
+	return false;
 }
 
-boolean EnumerateInputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCount)
+boolean 
+EnumerateInputDevices(
+	SOUNDDEVICE_INFO*** pSoundInfos, 
+	size_t* DevicesCount
+)
 {
 	UINT CountOfOutputs = 0;
 	IMMDeviceEnumerator* deviceEnumerator = NULL;
@@ -536,7 +733,7 @@ boolean EnumerateInputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCo
 
 		if (pDevice->lpVtbl)
 		{
-			(*pSoundInfos)[i]->Fmt.Index = i;
+			(*pSoundInfos)[i]->Fmt.Index = (BYTE)i;
 
 			if (SUCCEEDED(pDevice->lpVtbl->Activate(pDevice, &A_IID_IAudioClient, CLSCTX_ALL, NULL, (void**)&pAudioClient)))
 			{
@@ -591,9 +788,9 @@ boolean EnumerateInputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCo
 				}
 
 				// we didn't need to have WAVEFORMATEX struct
-				(*pSoundInfos)[i]->Fmt.Channels = waveFormat.nChannels;
+				(*pSoundInfos)[i]->Fmt.Channels = (BYTE)waveFormat.nChannels;
 				(*pSoundInfos)[i]->Fmt.SampleRate = waveFormat.nSamplesPerSec;
-				(*pSoundInfos)[i]->Fmt.Bits = waveFormat.wBitsPerSample;
+				(*pSoundInfos)[i]->Fmt.Bits = (BYTE)waveFormat.wBitsPerSample;
 
 				if (pAudioClient)
 				{
@@ -618,7 +815,11 @@ boolean EnumerateInputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCo
 }
 
 
-boolean EnumerateOutputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCount)
+boolean
+EnumerateOutputDevices(
+	SOUNDDEVICE_INFO*** pSoundInfos,
+	size_t* DevicesCount
+)
 {
 	UINT CountOfOutputs = 0;
 	IMMDeviceEnumerator* deviceEnumerator = NULL;
@@ -655,7 +856,7 @@ boolean EnumerateOutputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesC
 
 		if (pDevice->lpVtbl)
 		{
-			(*pSoundInfos)[i]->Fmt.Index = i;
+			(*pSoundInfos)[i]->Fmt.Index = (BYTE)i;
 
 			if (SUCCEEDED(pDevice->lpVtbl->Activate(pDevice, &A_IID_IAudioClient, CLSCTX_ALL, NULL, (void**)&pAudioClient)))
 			{
@@ -710,9 +911,9 @@ boolean EnumerateOutputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesC
 				}
 
 				// we didn't need to have WAVEFORMATEX struct
-				(*pSoundInfos)[i]->Fmt.Channels = waveFormat.nChannels;
+				(*pSoundInfos)[i]->Fmt.Channels = (BYTE)waveFormat.nChannels;
 				(*pSoundInfos)[i]->Fmt.SampleRate = waveFormat.nSamplesPerSec;
-				(*pSoundInfos)[i]->Fmt.Bits = waveFormat.wBitsPerSample;
+				(*pSoundInfos)[i]->Fmt.Bits = (BYTE)waveFormat.wBitsPerSample;
 
 				if (pAudioClient)
 				{

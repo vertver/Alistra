@@ -2,12 +2,31 @@
 #include "Base.h"
 
 #define SIZEOF_NAME 256
+#define MUSIC_BPM 100 
+#define WHOLE_NOTES_COUNT 80
 
 typedef struct  
 {
 	DWORD StartFrame;
 	DWORD EndFrame;
 } TIME_INTERVAL;
+
+typedef struct  
+{
+	WORD FirstNote;
+	WORD SecondNote;
+	WORD ThirdNote;
+	WORD FourthNote;
+	WORD FifthNote;
+	WORD SixthNote;
+} NOTES_LIST;
+
+typedef struct  
+{	
+	NOTES_LIST Notes;
+	float VolumeLevel;
+	float Interval;
+} MUSIC_INTERVAL;
 
 typedef struct  
 {
@@ -36,3 +55,15 @@ boolean StopAudio();
 
 boolean EnumerateInputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCount);
 boolean EnumerateOutputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCount);
+
+/*
+	Sound size in frames
+*/
+boolean CreateSoundWorker(boolean* pIsDoneBool);
+void SoundWorkerProc(void* pParams);
+boolean SoundWorkerIsEnded();
+float GetSoundWorkerProcess();
+
+boolean ProcessSoundWorker(SOUNDDEVICE_INFO* pInfo);
+void SoundWorker(float* FileData, size_t DataSize);
+void DestroySoundWorker();

@@ -3,9 +3,6 @@
   <ItemGroup>
     <ClCompile Include="entry_point.c" />
     <ClCompile Include="Base_Entry.c" />
-    <ClCompile Include="Base_GL.c">
-      <Filter>Render and window</Filter>
-    </ClCompile>
     <ClCompile Include="Base_Window.c">
       <Filter>Render and window</Filter>
     </ClCompile>
@@ -13,6 +10,16 @@
       <Filter>Sound</Filter>
     </ClCompile>
     <ClCompile Include="Base_Thread.c" />
+    <ClCompile Include="ProcessEffects.c">
+      <Filter>Sound\process</Filter>
+    </ClCompile>
+    <ClCompile Include="Base_D3D11.c">
+      <Filter>Render and window</Filter>
+    </ClCompile>
+    <ClCompile Include="Base_System.c" />
+    <ClCompile Include="Base_Camera.c">
+      <Filter>Render and window</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base.h" />
@@ -22,13 +29,13 @@
     <ClInclude Include="Base_Window.h">
       <Filter>Render and window\headers</Filter>
     </ClInclude>
-    <ClInclude Include="glcorearb.h">
-      <Filter>Render and window\headers</Filter>
-    </ClInclude>
     <ClInclude Include="Base_Sound.h">
       <Filter>Sound</Filter>
     </ClInclude>
     <ClInclude Include="Base_Thread.h" />
+    <ClInclude Include="Base_Camera.h">
+      <Filter>Render and window</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Render and window">
@@ -39,6 +46,9 @@
     </Filter>
     <Filter Include="Sound">
       <UniqueIdentifier>{98deccbb-011c-469c-a479-59a857aa1943}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound\process">
+      <UniqueIdentifier>{3dee7561-ac75-41f1-8c5f-7ff0be10fc31}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

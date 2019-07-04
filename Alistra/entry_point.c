@@ -1,6 +1,9 @@
 #include "Base.h"
 #include "Base_Sound.h"
 
+_declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001; 
+_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001; 
+
 int WINAPI wWinMain(
 	HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,

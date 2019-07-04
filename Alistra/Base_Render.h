@@ -1,12 +1,4 @@
 #pragma once
-#include "glcorearb.h"
-
-/*
-	GL Stuff
-*/
-void *get_proc(const char *proc);
-char OpenGL_Library();
-void load_procs();
 
 /*
 	Our render stuff

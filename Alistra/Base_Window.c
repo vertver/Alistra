@@ -1,6 +1,8 @@
 #include "Base.h"
 #include "Base_Render.h"
 #include "Base_Thread.h"
+#include "Base_Sound.h"
+#include "stdio.h"
 
 HWND MainHWND = NULL;
 boolean Window_Flag_Resizeing = false;
@@ -94,16 +96,13 @@ CustomWindowProc(
 	}
 
 #ifdef DEBUG
-	/*
-		if we complete work with messages - give it to nuklear
-	*/
-	if (NuklearHandleEvent(hWnd, uMsg, wParam, lParam)) return 0;
 #endif
 
 	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
-void DestroyMainWindow()
+void 
+DestroyMainWindow()
 {
 	/*
 		We can't destroy NULL or invalid handle, right?
@@ -120,11 +119,14 @@ void DestroyMainWindow()
 }
 
 void 
-CreateWindowProc(void* pParams)
+CreateWindowProc(
+	void* pParams
+)
 {
 	WNDCLASSW wc;
-	RECT rect = { 0, 0, 640, 480 };
-	DWORD style = WS_OVERLAPPEDWINDOW;
+	BASE_OS_VERSION_INFO sysVersion = { 0, 0, 0, 0 };
+	RECT rect = { 0, 0, BASE_WIDTH, BASE_HEIGHT };
+	DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
 	DWORD exstyle = WS_EX_APPWINDOW;
 	HWND wnd;
 
@@ -153,17 +155,8 @@ CreateWindowProc(void* pParams)
 
 	if (!wnd) ExitProcess(-132);
 
-	if (!InitRender(false))
-	{
-		MessageBoxW(NULL, L"Can't init render system", L"ЕГГОГ", MB_OK | MB_ICONHAND);
-		return -1;
-	}
-
 	MainHWND = wnd;
 
-	/*
-		Window process function, because we can
-	*/
 	while (WaitForSingleObject(hCloseEvent, 0) != WAIT_OBJECT_0)
 	{
 		MSG message;
@@ -193,12 +186,14 @@ CreateWindowProc(void* pParams)
 	MainHWND = NULL;
 }
 
-HWND GetMainWindowHandle()
+HWND 
+GetMainWindowHandle()
 {
 	return MainHWND;
 }
 
-HWND CreateMainWindow()
+HWND 
+CreateMainWindow()
 {
 	/*
 		Create close event
@@ -213,7 +208,7 @@ HWND CreateMainWindow()
 		Create window in other thread, because we don't want to
 		run it at main thread
 	*/
-	hThread = BaseCreateThread((ThreadFunc*)CreateWindowProc, &tInfo, 0);
+	hThread = BaseCreateThread((ThreadFunc*)CreateWindowProc, &tInfo, THREAD_PRIORITY_ABOVE_NORMAL);
 
 	while (!MainHWND)
 	{
@@ -223,7 +218,18 @@ HWND CreateMainWindow()
 	return MainHWND;
 }
 
-void MainWindowLoop()
+void
+MainWindowLoop()
 {
+	while (true)
+	{
+		Sleep(1);
 
+		if (GetMainWindowHandle() == NULL)
+		{
+			break;
+		}
+
+		DestroySound();
+	}
 }
