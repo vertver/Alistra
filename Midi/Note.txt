@@ -1,0 +1,12 @@
+Noise - LN_1
+Pad1 - First Pad
+Arp1 - First Arp
+Arp2 - Second Arp
+Tr_0 - First Low Arp
+An_0 - First Noise
+An_1 - Second Noise
+An_2 - Third Noise - 1 bar
+An_3 - Third Noise
+
+Arp2 = Arp3 - 3 First Notes
+Tr_0 = Tr_1 - First Notes

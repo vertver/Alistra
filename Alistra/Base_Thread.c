@@ -1,5 +1,7 @@
 #include "Base_Thread.h"
 
+THREAD_INFO tempInfo;
+
 DWORD
 AlistraThreadFunc(
 	void* pArgs
@@ -24,7 +26,6 @@ BaseCreateThread(
 )
 {
 	void* hThread = NULL;
-	THREAD_INFO tempInfo;
 
 	if (!threadInfo)
 	{

@@ -16,9 +16,11 @@ DEFINE_IID(ID3D11Texture2D, 6f15aaf2, d208, 4e89, 9a, b4, 48, 95, 35, d3, 4f, 9c
 // it is never ImGui
 boolean bImgui = false;
 boolean bVSync = true;
+boolean bDone = false;
 
 float FOV = 0.f;
 float ScreenAspectRatio = 0.f;
+float fRenderLoadProcess = 0.0f;
 
 DWORD GlobalWidth = 0;
 DWORD GlobalHeight = 0;
@@ -195,10 +197,10 @@ ResizeBuffers:
 	depthStencilViewDesc.Texture2D.MipSlice = 0;
 
 	// Create the depth stencil view.
-	if (FAILED(ID3D11Device_CreateDepthStencilView(pDevice, pDepthStencilBuffer, &depthStencilViewDesc, &pDepthStencilView)))
-	{
-		return false;
-	}
+// 	if (FAILED(ID3D11Device_CreateDepthStencilView(pDevice, pDepthStencilBuffer, &depthStencilViewDesc, &pDepthStencilView)))
+// 	{
+// 		return false;
+// 	}
 
 
 	// Bind the render target view and depth stencil buffer to the output render pipeline.
@@ -235,8 +237,6 @@ ResizeBuffers:
 
 	// Create the viewport.
 	ID3D11DeviceContext_RSSetViewports(pContext, 1, &viewport);
-
-
 
 	return true;
 }
@@ -372,5 +372,17 @@ RenderDraw()
 	}
 #endif
 
+	return true;
+}
+
+float
+GetRenderLoadProcess()
+{
+	return fRenderLoadProcess;
+}
+
+boolean
+IsRenderWorkDone()
+{
 	return true;
 }

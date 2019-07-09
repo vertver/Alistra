@@ -1,8 +1,13 @@
 #include "Base.h"
 #include "Base_Sound.h"
 
-_declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001; 
-_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001; 
+/*
+	kkrunchy compressor doesn't support exports
+*/
+#ifdef DEBUG
+_declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
+_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+#endif
 
 int WINAPI wWinMain(
 	HINSTANCE hInstance,
@@ -17,6 +22,7 @@ int WINAPI wWinMain(
 	int iCount = 0;
 	int iRet = 0;
 
+#ifdef DEBUG
 	HeapSetInformation(GetProcessHeap(), HeapCompatibilityInformation, &HeapInfo, sizeof(size_t));
 
 	/*
@@ -53,14 +59,16 @@ int WINAPI wWinMain(
 			}
 		}
 	}
+#endif
 
 	/*
-		Init OLE and COM
+		Init COM stuff
 	*/
 	CoInitialize(NULL);
 
 	iRet = RealEntryPoint(lpOutArgList, iCount);
 
+#ifdef DEBUG
 	/*
 		Free all stuff
 	*/
@@ -70,7 +78,7 @@ int WINAPI wWinMain(
 	}
 
 	HeapFree(GetProcessHeap(), 0, lpOutArgList);
-	
+#endif
 	CoUninitialize();
 
 	return iRet;

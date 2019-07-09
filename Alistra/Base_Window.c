@@ -4,12 +4,13 @@
 #include "Base_Sound.h"
 #include "stdio.h"
 
-HWND MainHWND = NULL;
 boolean Window_Flag_Resizeing = false;
-THREAD_INFO tInfo;
+float fLoadProcess = 0.0f;
 HANDLE hCloseEvent = NULL;
 HANDLE hWaitForInit = NULL;
 HANDLE hThread = NULL;
+HWND MainHWND = NULL;
+THREAD_INFO tInfo;
 
 /*
 	Events for our thread, because multithread code is so hard
@@ -62,7 +63,6 @@ CustomWindowProc(
 		{
 			if (!RenderDraw())
 			{
-				PostQuitMessage(0);
 				return 0;
 			}
 		}
@@ -124,7 +124,6 @@ CreateWindowProc(
 )
 {
 	WNDCLASSW wc;
-	BASE_OS_VERSION_INFO sysVersion = { 0, 0, 0, 0 };
 	RECT rect = { 0, 0, BASE_WIDTH, BASE_HEIGHT };
 	DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
 	DWORD exstyle = WS_EX_APPWINDOW;
@@ -134,11 +133,10 @@ CreateWindowProc(
 		Register our window class
 	*/
 	memset(&wc, 0, sizeof(wc));
-	wc.style = CS_DBLCLKS;
 	wc.lpfnWndProc = CustomWindowProc;
 	wc.hInstance = GetModuleHandleW(NULL);
-	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wc.hbrBackground = CreateSolidBrush(NULL);
 	wc.lpszClassName = L"ALISTRA_WINDOW";
 	RegisterClassW(&wc);
 
@@ -219,17 +217,31 @@ CreateMainWindow()
 }
 
 void
-MainWindowLoop()
+MainWindowLoop(boolean bAudio)
 {
 	while (true)
 	{
-		Sleep(1);
+		Sleep(5);
 
 		if (GetMainWindowHandle() == NULL)
 		{
 			break;
 		}
 
-		DestroySound();
+		if (!bAudio)
+		{
+			if (IsMusicEnd())
+			{
+				break;
+			}
+		}
 	}
+
+	DestroySound();
+}
+
+void
+SetLoadProcess(float floatProcess)
+{
+	fLoadProcess = floatProcess;
 }

@@ -56,6 +56,7 @@ GetSystemVersion(BASE_OS_VERSION_INFO* pVersion)
 				pVersion->MajorVersion = HIWORD(pvi->dwProductVersionMS);
 				pVersion->MinorVersion = LOWORD(pvi->dwProductVersionMS);
 				pVersion->BuildVersion = HIWORD(pvi->dwProductVersionLS);
+				pVersion->MarketVersion = LOWORD(pvi->dwProductVersionLS);
 			}
 		}
 

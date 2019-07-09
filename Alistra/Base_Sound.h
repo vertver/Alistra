@@ -31,7 +31,7 @@ typedef struct
 typedef struct  
 {
 	BYTE Index;						// for sounds - index of audios, for devices - device index
-	BYTE IsFloat;					// only for sounds, device always float
+	BYTE IsFloat;
 	BYTE Channels;
 	BYTE Bits;						// only for sounds, device accept float values
 	DWORD Frames;					// for sounds - frames of all audio sample, for devices - buffer size in frames
@@ -56,14 +56,17 @@ boolean StopAudio();
 boolean EnumerateInputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCount);
 boolean EnumerateOutputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCount);
 
+boolean IsPlayingStarted();
+
 /*
 	Sound size in frames
 */
 boolean CreateSoundWorker(boolean* pIsDoneBool);
 void SoundWorkerProc(void* pParams);
-boolean SoundWorkerIsEnded();
 float GetSoundWorkerProcess();
+boolean IsSoundWorkerEnded();
+boolean IsMusicEnd();
 
 boolean ProcessSoundWorker(SOUNDDEVICE_INFO* pInfo);
-void SoundWorker(float* FileData, size_t DataSize);
+void SoundWorker(float* FileData, size_t DataSize, int Channels);
 void DestroySoundWorker();

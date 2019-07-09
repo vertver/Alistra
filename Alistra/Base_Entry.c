@@ -10,9 +10,12 @@ RealEntryPoint(
 	int argc
 )
 {
+	boolean isInited = false;
+	boolean isAudioWorkerDone = false;
 	boolean isImgui = false;
 	boolean bAudio = false;
 
+#ifdef DEBUG
 	for (int i = 0; i < argc; i++)
 	{
 		/*
@@ -31,13 +34,16 @@ RealEntryPoint(
 			continue;
 		}
 	}
-  	
+#endif
+
   	int Funcs = 0;
 
-	BASE_OS_VERSION_INFO* pOsInfo;
-	pOsInfo = HeapAlloc(GetProcessHeap(), 0, sizeof(BASE_OS_VERSION_INFO));
-	memset(pOsInfo, 0, sizeof(BASE_OS_VERSION_INFO));
-	if (!GetSystemVersion(pOsInfo)) return -32;
+	BASE_OS_VERSION_INFO pOsInfo;
+	memset(&pOsInfo, 0, sizeof(BASE_OS_VERSION_INFO));
+	if (!GetSystemVersion(&pOsInfo))
+	{
+		return -32;
+	}
 
 	if (!bAudio)
 	{
@@ -48,8 +54,13 @@ RealEntryPoint(
 
 		if (!EnumerateOutputDevices(&pOut_Info, &OutCountDevices) || !EnumerateInputDevices(&pIn_Info, &InCountDevices))
 		{
-			MessageBoxW(NULL, L"Can't enumerate devices. Please, restart demo with '-disable_audio' argument", L"ЕГГОГ", MB_OK | MB_ICONHAND);
+#ifdef DEBUG
+			MessageBoxW(NULL, L"Can't enumerate devices. Please, restart demo with '-disable_audio' argument", L"ЕГГОГ", MB_OK | MB_ICONHAND);	
 			return -1;
+#else
+			MessageBoxW(NULL, L"Can't enumerate devices. Starting 'Alistra' without sound", L"ВАРНИНГ", MB_OK | MB_ICONWARNING);
+			bAudio = true;
+#endif
 		}
 	}
 
@@ -62,10 +73,60 @@ RealEntryPoint(
 	InitRender(isImgui);
 	SetInitedEvent();
 
+	if (!bAudio)
+	{
+		if (!InitSound(NULL, NULL))
+		{
+			MessageBoxW(NULL, L"Can't create sound device. Starting 'Alistra' without sound", L"ВАРНИНГ", MB_OK | MB_ICONWARNING);
+			bAudio = true;
+		}
+
+		if (!CreateSoundWorker(&isAudioWorkerDone))
+		{
+			bAudio = true;
+		}
+	}
+
+	/*
+		Load process loop. We are here while our demo is not inited
+	*/
+	while (!isInited)
+	{
+		boolean isEnd = false;
+
+		if (!bAudio)
+		{
+			isEnd = (IsSoundWorkerEnded() && IsRenderWorkDone());
+				
+			SetLoadProcess((GetSoundWorkerProcess() * 0.5f) + (GetRenderLoadProcess() * 0.5f));
+		}
+		else
+		{
+			isEnd = IsRenderWorkDone();
+			SetLoadProcess((GetRenderLoadProcess() * 0.5f));
+		}
+
+		isInited = isEnd;
+		Sleep(5);
+	}
+
+	if (isAudioWorkerDone)
+	{
+		PlayAudio();
+
+		/*
+			Waiting for starting WASAPI thread
+		*/
+		while (!IsPlayingStarted())
+		{
+			Sleep(1);
+		}
+	}
+
 	/*
 		While application is not closed - we are here
 	*/
-	MainWindowLoop();
+	MainWindowLoop(bAudio);
 
 	return Funcs;
 }

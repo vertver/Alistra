@@ -2,7 +2,7 @@
 #include <math.h>
 
 /*
-	Music Beats = quarter note. That means we can transform it
+	Music Beats = quarter note if 4/4. That means we can transform it
 	to full whole notes (1/1).
 */
 #define WHOLE_NOTES_PER_MINUTE (MUSIC_BPM / 4)
@@ -10,6 +10,8 @@
 
 #define ALIGN_SIZE(Size, AlSize)        ((Size + (AlSize-1)) & (~(AlSize-1)))
 #define ALIGN_SIZE_64K(Size)            ALIGN_SIZE(Size, 65536)
+
+#define maxmin(a, minimum, maximum)  min(max(a, minimum), maximum)
 
 /*
 	Windows 10 only
@@ -42,7 +44,10 @@ const SOUNDID_PATH SoundsPaths[] =
 	{ 2, L"Ring02" }
 };
 
+WAVEFORMATEX waveFormat;
+HANDLE hFileToPlay = NULL;
 float* BaseBuffer = NULL;
+DWORD dwHeaderSize = 0;
 size_t BufferPosition = 0;
 size_t ProcessedFrames = 0;
 size_t FramesCount = 0;
@@ -52,13 +57,38 @@ ProcessSoundWorker(
 	SOUNDDEVICE_INFO* pInfo
 )
 {
+#if 1
+	DWORD dwTemp = 0;
+	LARGE_INTEGER larg;
+	memset(&larg, 0, sizeof(LARGE_INTEGER));
+
+	hFileToPlay = CreateFileW(L"I:\\Test_Alistra.raw", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	if (!hFileToPlay || hFileToPlay == INVALID_HANDLE_VALUE) return false;
+
+	GetFileSizeEx(hFileToPlay, &larg);
+	if (larg.QuadPart < 8)
+	{
+		CloseHandle(hFileToPlay);
+		hFileToPlay = NULL;
+		return false;
+	}
+
+	BaseBuffer = HeapAlloc(GetProcessHeap(), 0, (size_t)larg.QuadPart);
+	ReadFile(hFileToPlay, BaseBuffer, (DWORD)larg.QuadPart, &dwTemp, 0);
+
+	FramesCount = (size_t)(larg.QuadPart / sizeof(float));
+
+	CloseHandle(hFileToPlay);	
+	hFileToPlay = NULL;
+
+#else
 	__try
 	{
-		FramesCount = GetMusicFrames(pInfo->Fmt.SampleRate);
+		FramesCount = GetMusicFrames(pInfo->Fmt.SampleRate) * pInfo->Fmt.Channels;
 		BaseBuffer = VirtualAlloc(NULL, ALIGN_SIZE_64K(FramesCount * sizeof(float)), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 		if (!BaseBuffer) return false;
 
-		while (ProcessedFrames < FramesCount)
+		//while (ProcessedFrames < FramesCount)
 		{
 			/*
 				TODO: Process function
@@ -72,11 +102,15 @@ ProcessSoundWorker(
 		*/
 		return false;
 	}
+#endif	
+
+	waveFormat.wFormatTag = (pInfo->Fmt.IsFloat ? 3 : 1);
+	waveFormat.wBitsPerSample = pInfo->Fmt.Bits;
 
 	return true;
 }
 
-float 
+float
 GetSoundWorkerProcess()
 {
 	float ret = (((float)ProcessedFrames) / ((float)(FramesCount)));
@@ -84,15 +118,61 @@ GetSoundWorkerProcess()
 }
 
 void 
-SoundWorker(float* FileData, size_t DataSize)
+SoundWorker(
+	float* FileData,
+	size_t DataSize, 
+	int Channels
+)
 {
-	memcpy(FileData, &BaseBuffer[BufferPosition], DataSize * sizeof(float));
+	/*
+		M$ Frame Size = Single Frame Size * Channels Count
 
-	BufferPosition += DataSize;
+		That means...
+
+		4410 Frames Buffer == 8820 Frames Buffer by normal system of counting frames
+	*/
+	size_t sizeToRead = DataSize * Channels;
+
+	if (waveFormat.wFormatTag == 3)
+	{
+		if (BufferPosition + sizeToRead < FramesCount)
+		{
+			memcpy(FileData, &BaseBuffer[BufferPosition], sizeToRead * sizeof(float));
+		}
+		else
+		{
+			memset(FileData, 0, sizeToRead * sizeof(float));
+		}
+	}
+	else
+	{
+		short* pShortData = (short*)FileData;
+
+		switch (waveFormat.wBitsPerSample)
+		{
+		case 16:
+			for (size_t i = 0; i < sizeToRead; i++)
+			{
+				pShortData[i] = maxmin(((short)(BaseBuffer[BufferPosition + i] * 32768.0f)), -32768, 32767);
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+	BufferPosition += sizeToRead;
 }
+
+boolean
+IsMusicEnd()
+{
+	return (BufferPosition >= FramesCount);
+} 
 
 void
 DestroySoundWorker()
 {
 	if (BaseBuffer && FramesCount) VirtualFree(BaseBuffer, FramesCount * sizeof(float), MEM_RELEASE);
+	if (hFileToPlay || hFileToPlay != INVALID_HANDLE_VALUE) CloseHandle(hFileToPlay);
 }
