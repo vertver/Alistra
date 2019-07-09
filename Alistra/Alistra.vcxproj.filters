@@ -10,15 +10,15 @@
       <Filter>Sound</Filter>
     </ClCompile>
     <ClCompile Include="Base_Thread.c" />
-    <ClCompile Include="ProcessEffects.c">
-      <Filter>Sound\process</Filter>
-    </ClCompile>
     <ClCompile Include="Base_D3D11.c">
       <Filter>Render and window</Filter>
     </ClCompile>
     <ClCompile Include="Base_System.c" />
     <ClCompile Include="Base_Camera.c">
       <Filter>Render and window</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundWorker.c">
+      <Filter>Sound\process</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

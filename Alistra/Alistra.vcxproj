@@ -300,7 +300,7 @@
     <ClCompile Include="Base_Thread.c" />
     <ClCompile Include="Base_Window.c" />
     <ClCompile Include="entry_point.c" />
-    <ClCompile Include="ProcessEffects.c" />
+    <ClCompile Include="SoundWorker.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base.h" />
