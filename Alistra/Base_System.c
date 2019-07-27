@@ -67,7 +67,7 @@ GetSystemVersion(BASE_OS_VERSION_INFO* pVersion)
 }
 
 boolean 
-LoadFile(const wchar_t PathToFile, void** OutFile, size_t* OutSize)
+LoadFile(const wchar_t* PathToFile, void** OutFile, size_t* OutSize)
 {
 	DWORD dwTemp = 0;
 	LARGE_INTEGER larg;
@@ -86,7 +86,8 @@ LoadFile(const wchar_t PathToFile, void** OutFile, size_t* OutSize)
 	}
 
 	*OutFile = HeapAlloc(GetProcessHeap(), 0, (size_t)larg.QuadPart);
-	ReadFile(hFile, *OutFile, (DWORD)larg.QuadPart, &dwTemp, 0);
+	*OutSize = larg.QuadPart;
+	ReadFile(hFile, *OutFile, (DWORD)OutSize, &dwTemp, 0);
 
 	CloseHandle(hFile);
 	hFile = NULL;
