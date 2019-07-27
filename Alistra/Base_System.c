@@ -66,3 +66,29 @@ GetSystemVersion(BASE_OS_VERSION_INFO* pVersion)
 	return false;
 }
 
+boolean 
+LoadFile(const wchar_t PathToFile, void** OutFile, size_t* OutSize)
+{
+	DWORD dwTemp = 0;
+	LARGE_INTEGER larg;
+	HANDLE hFile = NULL;
+	memset(&larg, 0, sizeof(LARGE_INTEGER));
+
+	hFile = CreateFileW(PathToFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	if (!hFile || hFile == INVALID_HANDLE_VALUE) return false;
+
+	GetFileSizeEx(hFile, &larg);
+	if (larg.QuadPart < 8)
+	{
+		CloseHandle(hFile);
+		hFile = NULL;
+		return false;
+	}
+
+	*OutFile = HeapAlloc(GetProcessHeap(), 0, (size_t)larg.QuadPart);
+	ReadFile(hFile, *OutFile, (DWORD)larg.QuadPart, &dwTemp, 0);
+
+	CloseHandle(hFile);
+	hFile = NULL;
+	return true;
+}

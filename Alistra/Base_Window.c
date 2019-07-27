@@ -95,9 +95,6 @@ CustomWindowProc(
 		break;
 	}
 
-#ifdef DEBUG
-#endif
-
 	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
@@ -111,7 +108,7 @@ DestroyMainWindow()
 	{
 		DestroyRender();
 		DestroyWindow(MainHWND);
-		UnregisterClassW(L"ALISTRA_WINDOW", GetModuleHandle(0));
+		UnregisterClassW(L"ALISTRA_WINDOW", GetModuleHandleW(NULL));
 
 		if (hCloseEvent && hCloseEvent != INVALID_HANDLE_VALUE) CloseHandle(hCloseEvent);
 		if (hWaitForInit && hWaitForInit != INVALID_HANDLE_VALUE) CloseHandle(hWaitForInit);
@@ -136,7 +133,7 @@ CreateWindowProc(
 	wc.lpfnWndProc = CustomWindowProc;
 	wc.hInstance = GetModuleHandleW(NULL);
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground = CreateSolidBrush(NULL);
+	wc.hbrBackground = CreateSolidBrush(0);
 	wc.lpszClassName = L"ALISTRA_WINDOW";
 	RegisterClassW(&wc);
 
@@ -176,6 +173,14 @@ CreateWindowProc(
 			Draw our application and wait for next time
 		*/
 		RenderDraw();
+		
+		/*
+			Required by demoparty rules
+		*/
+		if (GetAsyncKeyState(VK_ESCAPE))
+		{
+			break;
+		}
 
 		Sleep(4);
 	}
@@ -217,7 +222,9 @@ CreateMainWindow()
 }
 
 void
-MainWindowLoop(boolean bAudio)
+MainWindowLoop(
+	boolean bAudio
+)
 {
 	while (true)
 	{
@@ -241,7 +248,9 @@ MainWindowLoop(boolean bAudio)
 }
 
 void
-SetLoadProcess(float floatProcess)
+SetLoadProcess(
+	float floatProcess
+)
 {
 	fLoadProcess = floatProcess;
 }

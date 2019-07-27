@@ -2,8 +2,9 @@
 #include "Base.h"
 
 #define SIZEOF_NAME 256
-#define MUSIC_BPM 100 
-#define WHOLE_NOTES_COUNT 80
+#define MUSIC_BPM 140 
+#define WHOLE_NOTES_COUNT 120
+#define MAX_NOTES 6
 
 typedef struct  
 {
@@ -12,20 +13,17 @@ typedef struct
 } TIME_INTERVAL;
 
 typedef struct  
-{
-	WORD FirstNote;
-	WORD SecondNote;
-	WORD ThirdNote;
-	WORD FourthNote;
-	WORD FifthNote;
-	WORD SixthNote;
+{	
+	DWORD dwState;
+	DWORD dwNoteIndex;
+	float fVolumeLevel;
+	float fInterval;
 } NOTES_LIST;
 
 typedef struct  
 {	
-	NOTES_LIST Notes;
-	float VolumeLevel;
-	float Interval;
+	DWORD dwReserved;
+	NOTES_LIST NotesArray[MAX_NOTES];
 } MUSIC_INTERVAL;
 
 typedef struct  

@@ -6,7 +6,11 @@
 	to full whole notes (1/1).
 */
 #define WHOLE_NOTES_PER_MINUTE (MUSIC_BPM / 4)
-#define GetMusicFrames(LSampleRate) ((size_t)(ceilf(((((float)WHOLE_NOTES_COUNT) / ((float)WHOLE_NOTES_PER_MINUTE)) * 60.f) * ((float)(LSampleRate))))) 
+
+#define GetMusicFrames(LSampleRate) ((size_t) \
+(ceilf(((((float)WHOLE_NOTES_COUNT) / \
+((float)WHOLE_NOTES_PER_MINUTE)) * 60.f) \
+* ((float)(LSampleRate))))) 
 
 #define ALIGN_SIZE(Size, AlSize)        ((Size + (AlSize-1)) & (~(AlSize-1)))
 #define ALIGN_SIZE_64K(Size)            ALIGN_SIZE(Size, 65536)
@@ -47,6 +51,7 @@ const SOUNDID_PATH SoundsPaths[] =
 WAVEFORMATEX waveFormat;
 HANDLE hFileToPlay = NULL;
 float* BaseBuffer = NULL;
+float fMasterVolume = 1.f;
 DWORD dwHeaderSize = 0;
 size_t BufferPosition = 0;
 size_t ProcessedFrames = 0;
@@ -117,6 +122,7 @@ GetSoundWorkerProcess()
 	return ret > 0.95f ? 1.0f : ret;
 }
 
+
 void 
 SoundWorker(
 	float* FileData,
@@ -137,6 +143,11 @@ SoundWorker(
 	{
 		if (BufferPosition + sizeToRead < FramesCount)
 		{
+			for (size_t i = 0; i < sizeToRead; i++)
+			{
+				BaseBuffer[BufferPosition + i] *= fMasterVolume;
+			}
+
 			memcpy(FileData, &BaseBuffer[BufferPosition], sizeToRead * sizeof(float));
 		}
 		else
@@ -174,5 +185,4 @@ void
 DestroySoundWorker()
 {
 	if (BaseBuffer && FramesCount) VirtualFree(BaseBuffer, FramesCount * sizeof(float), MEM_RELEASE);
-	if (hFileToPlay || hFileToPlay != INVALID_HANDLE_VALUE) CloseHandle(hFileToPlay);
 }

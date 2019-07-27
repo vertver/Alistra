@@ -285,6 +285,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ADSR_Synthesizer.c" />
     <ClCompile Include="Base_Camera.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_Crinkler|Win32'">true</ExcludedFromBuild>
@@ -303,9 +304,11 @@
     <ClCompile Include="SoundWorker.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ADSR_Synthesizer.h" />
     <ClInclude Include="Base.h" />
     <ClInclude Include="Base_Render.h" />
     <ClInclude Include="Base_Sound.h" />
+    <ClInclude Include="Base_Synth.h" />
     <ClInclude Include="Base_Thread.h" />
     <ClInclude Include="Base_Window.h" />
     <ClInclude Include="Base_Camera.h">
@@ -316,6 +319,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_Crinkler|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="LPFilter.c" />
+    <ClInclude Include="Reverb.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

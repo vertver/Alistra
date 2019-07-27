@@ -1,9 +1,7 @@
 #include "Base_Sound.h"
 #include "Base_Thread.h"
-#include <functiondiscoverykeys.h>
 #include <audiopolicy.h>
 #include <AudioClient.h>
-#include <initguid.h>
 #include <mmdeviceapi.h>
 #include <endpointvolume.h>
 
@@ -33,6 +31,9 @@ DEFINE_IID(IAudioRenderClient, f294acfc, 3146, 4483, a7, bf, ad, dc, a7, c2, 60,
 DEFINE_IID(IAudioCaptureClient, c8adbd64, e71e, 48a0, a4, de, 18, 5c, 39, 5c, d3, 17);
 DEFINE_IID(KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, 00000003, 0000, 0010, 80, 00, 00, aa, 00, 38, 9b, 71);
 DEFINE_IID(KSDATAFORMAT_SUBTYPE_PCM, 00000001, 0000, 0010, 80, 00, 00, aa, 00, 38, 9b, 71);
+
+const PROPERTYKEY APKEY_AudioEngine_DeviceFormat = { { 0xf19f064d, 0x82c,  0x4e27, { 0xbc, 0x73, 0x68, 0x82, 0xa1, 0xbb, 0x8e,  0x4c } }, 0 };
+const PROPERTYKEY APKEY_Device_FriendlyName = { { 0xa45c254e, 0xdf1c, 0x4efd, { 0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0 } }, 14 };
 
 typedef HANDLE	(WINAPI *FAvSetMmThreadCharacteristics)		(LPCSTR, LPDWORD);
 typedef BOOL	(WINAPI *FAvRevertMmThreadCharacteristics)	(HANDLE);
@@ -99,7 +100,6 @@ IsSoundWorkerEnded()
 {
 	return (WaitForSingleObject(hSoundWorkEnded, 0) == WAIT_OBJECT_0);
 }
-
 
 boolean
 IsPlayingStarted()
@@ -406,7 +406,7 @@ InitSound(
 			PropVariantInit(&value);
 
 			// get WAVEFORMATEX struct
-			if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &PKEY_AudioEngine_DeviceFormat, &value)))
+			if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &APKEY_AudioEngine_DeviceFormat, &value)))
 			{
 				// note: it can be WAVEFORMAT struct, so we copy by smallest size
 				memcpy(&waveFormat, value.blob.pBlobData, min(sizeof(WAVEFORMATEX), (value.blob.cbSize ? value.blob.cbSize : sizeof(WAVEFORMAT))));
@@ -416,7 +416,7 @@ InitSound(
 			PropVariantInit(&value);
 
 			// get device name 
-			if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &PKEY_Device_FriendlyName, &value)))
+			if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &APKEY_Device_FriendlyName, &value)))
 			{
 				if (value.vt == VT_LPWSTR)
 				{
@@ -453,7 +453,7 @@ InitSound(
 			PropVariantInit(&value);
 
 			// get WAVEFORMATEX struct
-			if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &PKEY_AudioEngine_DeviceFormat, &value)))
+			if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &APKEY_AudioEngine_DeviceFormat, &value)))
 			{
 				// note: it can be WAVEFORMAT struct, so we copy by smallest size
 				memcpy(&waveFormat, value.blob.pBlobData, min(sizeof(WAVEFORMATEX), (value.blob.cbSize ? value.blob.cbSize : sizeof(WAVEFORMAT))));
@@ -463,7 +463,7 @@ InitSound(
 			PropVariantInit(&value);
 
 			// get device name 
-			if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &PKEY_Device_FriendlyName, &value)))
+			if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &APKEY_Device_FriendlyName, &value)))
 			{
 				if (value.vt == VT_LPWSTR)
 				{
@@ -767,6 +767,7 @@ StopAudio()
 		InitedDevices.pOutputClient->lpVtbl->Stop(InitedDevices.pOutputClient);
 		InitedDevices.pOutputClient->lpVtbl->Reset(InitedDevices.pOutputClient);
 	}
+
 	return true;
 }
 
@@ -834,7 +835,7 @@ EnumerateInputDevices(
 				{
 					PropVariantInit(&value);
 
-					if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &PKEY_AudioEngine_DeviceFormat, &value)))
+					if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &APKEY_AudioEngine_DeviceFormat, &value)))
 					{
 						memcpy(&waveFormat, value.blob.pBlobData, min(sizeof(WAVEFORMATEX), value.blob.cbSize));
 					}
@@ -842,7 +843,7 @@ EnumerateInputDevices(
 					PropVariantClear(&value);
 					PropVariantInit(&value);
 
-					if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &PKEY_Device_FriendlyName, &value)))
+					if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &APKEY_Device_FriendlyName, &value)))
 					{
 						if (value.vt == VT_LPWSTR)
 						{
@@ -957,7 +958,7 @@ EnumerateOutputDevices(
 				{
 					PropVariantInit(&value);
 
-					if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &PKEY_AudioEngine_DeviceFormat, &value)))
+					if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &APKEY_AudioEngine_DeviceFormat, &value)))
 					{
 						memcpy(&waveFormat, value.blob.pBlobData, min(sizeof(WAVEFORMATEX), value.blob.cbSize));
 					}
@@ -965,7 +966,7 @@ EnumerateOutputDevices(
 					PropVariantClear(&value);
 					PropVariantInit(&value);
 
-					if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &PKEY_Device_FriendlyName, &value)))
+					if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &APKEY_Device_FriendlyName, &value)))
 					{
 						if (value.vt == VT_LPWSTR)
 						{
@@ -981,7 +982,6 @@ EnumerateOutputDevices(
 								}
 							}
 						}
-
 					}
 
 					PropVariantClear(&value);

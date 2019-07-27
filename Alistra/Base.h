@@ -19,6 +19,7 @@ typedef struct
 
 int RealEntryPoint(char** argv, int argc);
 boolean GetSystemVersion(BASE_OS_VERSION_INFO* pVersion);
+boolean LoadFile(const wchar_t PathToFile, void** OutFile, size_t* OutSize);
 
 #ifndef GUID_SECT
 #define GUID_SECT

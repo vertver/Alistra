@@ -18,7 +18,10 @@
       <Filter>Render and window</Filter>
     </ClCompile>
     <ClCompile Include="SoundWorker.c">
-      <Filter>Sound\process</Filter>
+      <Filter>Sound\Sound worker</Filter>
+    </ClCompile>
+    <ClCompile Include="ADSR_Synthesizer.c">
+      <Filter>Sound\Synth</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -36,6 +39,18 @@
     <ClInclude Include="Base_Camera.h">
       <Filter>Render and window</Filter>
     </ClInclude>
+    <ClInclude Include="ADSR_Synthesizer.h">
+      <Filter>Sound\Synth</Filter>
+    </ClInclude>
+    <ClInclude Include="LPFilter.c">
+      <Filter>Sound\Synth\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="Reverb.c">
+      <Filter>Sound\Synth\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="Base_Synth.h">
+      <Filter>Sound\Synth</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Render and window">
@@ -47,8 +62,17 @@
     <Filter Include="Sound">
       <UniqueIdentifier>{98deccbb-011c-469c-a479-59a857aa1943}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Sound\process">
-      <UniqueIdentifier>{3dee7561-ac75-41f1-8c5f-7ff0be10fc31}</UniqueIdentifier>
+    <Filter Include="Sound\Sound worker">
+      <UniqueIdentifier>{e98792b9-4544-4c67-87f1-6a4c8bf68efa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound\Synth">
+      <UniqueIdentifier>{2bf28a5f-a101-4a1b-a482-2aecbd930a83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound\Synth\Effects">
+      <UniqueIdentifier>{f12a8aae-61c4-45bd-a568-681f431c72a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound\Synth\ADSR">
+      <UniqueIdentifier>{e9c4223a-d57a-44eb-8992-18b2aa031d05}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
