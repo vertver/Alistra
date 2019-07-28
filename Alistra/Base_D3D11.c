@@ -165,6 +165,7 @@ char InitPixelShader()
 
 void SetProjectionMatrix(float width, float height)
 {
+	D3D11_VIEWPORT viewport;
     float aspect = 1.0f;
     float left = -5.0f;
     float right = 5.0f;
@@ -185,6 +186,17 @@ void SetProjectionMatrix(float width, float height)
     }
 
     g_Projection = OrtographicOffCenterLH(left, right, bottom, top, nearZ, farZ);
+
+	// Setup the viewport for rendering.
+	viewport.Width = (float)width;
+	viewport.Height = (float)height;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+
+	// Create the viewport.
+	ID3D11DeviceContext_RSSetViewports(pContext, 1, &viewport);
 }
 
 char InitGeometry(D3D11_VIEWPORT *view_port)

@@ -38,6 +38,9 @@ CustomWindowProc(
 {
 	switch (uMsg)
 	{
+	case WM_MOVE:
+		Sleep(0);
+		break;
 	case WM_CLOSE:
 		MainWindowDestroyEvent();
 		break;
@@ -91,7 +94,6 @@ CustomWindowProc(
 		PostQuitMessage(0);
 		return 0;
 	default:
-		Sleep(1);
 		break;
 	}
 
