@@ -85,10 +85,9 @@ LoadFile(const wchar_t* PathToFile, void** OutFile, size_t* OutSize)
 		return false;
 	}
 
-	*OutFile = HeapAlloc(GetProcessHeap(), 0, (size_t)larg.QuadPart);
+	*OutFile = HeapAlloc(GetProcessHeap(), 0, (size_t)larg.QuadPart);    
 	*OutSize = larg.QuadPart;
-	ReadFile(hFile, *OutFile, (DWORD)OutSize, &dwTemp, 0);
-
+	ReadFile(hFile, *OutFile, (DWORD)*OutSize, &dwTemp, 0);
 	CloseHandle(hFile);
 	hFile = NULL;
 	return true;

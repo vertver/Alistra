@@ -22,16 +22,15 @@ RealEntryPoint(
 			Ignore path to file. We don't need to process it
 		*/
 		if (!i) continue;
-		if (strcmp(argv[i], "-use_imgui"))
+		if (strcmp(argv[i], "-use_imgui") == 0)
 		{
 			isImgui = true;
 			continue;
 		}
 
-		if (strcmp(argv[i], "-disable_audio"))
+		if (strcmp(argv[i], "-disable_audio") == 0)
 		{
 			bAudio = true;
-			continue;
 		}
 	}
 #endif
@@ -88,11 +87,11 @@ RealEntryPoint(
 	}
 
 	/*
-		Load process loop. We are here while our demo is not inited
+		Load process loop. We are here while our demo is not initiated
 	*/
 	while (!isInited)
 	{
-		boolean isEnd = false;
+		boolean isEnd;
 
 		if (!bAudio)
 		{

@@ -23,6 +23,18 @@
     <ClCompile Include="ADSR_Synthesizer.c">
       <Filter>Sound\Synth</Filter>
     </ClCompile>
+    <ClCompile Include="Math\Camera.c">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\Matrix.c">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\Misc_Math.c">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\Vector.c">
+      <Filter>Math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base.h" />
@@ -51,6 +63,21 @@
     <ClInclude Include="Base_Synth.h">
       <Filter>Sound\Synth</Filter>
     </ClInclude>
+    <ClInclude Include="Math\Base_Math.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Camera.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Matrix.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Misc_Math.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vector.h">
+      <Filter>Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Render and window">
@@ -73,6 +100,9 @@
     </Filter>
     <Filter Include="Sound\Synth\ADSR">
       <UniqueIdentifier>{e9c4223a-d57a-44eb-8992-18b2aa031d05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{9856fd82-c5d1-42b9-98dc-693e687e9395}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

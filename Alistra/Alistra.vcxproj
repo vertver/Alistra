@@ -301,6 +301,10 @@
     <ClCompile Include="Base_Thread.c" />
     <ClCompile Include="Base_Window.c" />
     <ClCompile Include="entry_point.c" />
+    <ClCompile Include="Math\Camera.c" />
+    <ClCompile Include="Math\Matrix.c" />
+    <ClCompile Include="Math\Misc_Math.c" />
+    <ClCompile Include="Math\Vector.c" />
     <ClCompile Include="SoundWorker.c" />
   </ItemGroup>
   <ItemGroup>
@@ -320,6 +324,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="LPFilter.c" />
+    <ClInclude Include="Math\Base_Math.h" />
+    <ClInclude Include="Math\Camera.h" />
+    <ClInclude Include="Math\Matrix.h" />
+    <ClInclude Include="Math\Misc_Math.h" />
+    <ClInclude Include="Math\Vector.h" />
     <ClInclude Include="Reverb.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
