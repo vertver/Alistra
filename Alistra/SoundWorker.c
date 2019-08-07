@@ -1,17 +1,6 @@
 #include "Base_Sound.h"
 #include <math.h>
 
-/*
-	Music Beats = quarter note if 4/4. That means we can transform it
-	to full whole notes (1/1).
-*/
-#define WHOLE_NOTES_PER_MINUTE (MUSIC_BPM / 4)
-
-#define GetMusicFrames(LSampleRate) ((size_t) \
-(ceilf(((((float)WHOLE_NOTES_COUNT) / \
-((float)WHOLE_NOTES_PER_MINUTE)) * 60.f) \
-* ((float)(LSampleRate))))) 
-
 #define ALIGN_SIZE(Size, AlSize)        ((Size + (AlSize-1)) & (~(AlSize-1)))
 #define ALIGN_SIZE_64K(Size)            ALIGN_SIZE(Size, 65536)
 
@@ -53,6 +42,7 @@ HANDLE hFileToPlay = NULL;
 float* BaseBuffer = NULL;
 float fMasterVolume = 1.f;
 DWORD dwHeaderSize = 0;
+DWORD dwSampleRate = 0;
 size_t BufferPosition = 0;
 size_t ProcessedFrames = 0;
 size_t FramesCount = 0;
@@ -85,6 +75,8 @@ ProcessSoundWorker(
 
 	CloseHandle(hFileToPlay);	
 	hFileToPlay = NULL;
+
+	dwSampleRate = pInfo->Fmt.SampleRate;
 
 #else
 	__try
@@ -122,6 +114,11 @@ GetSoundWorkerProcess()
 	return ret > 0.95f ? 1.0f : ret;
 }
 
+DWORD
+GetSampleRate()
+{
+	return dwSampleRate;
+}
 
 void 
 SoundWorker(

@@ -2,9 +2,32 @@
 #include "Base.h"
 
 #define SIZEOF_NAME 256
-#define MUSIC_BPM 140 
-#define WHOLE_NOTES_COUNT 120
+#define MUSIC_BPM 140.f
+#define WHOLE_NOTES_COUNT 123.f
 #define MAX_NOTES 6
+
+/*
+	Music Beats = quarter note if 4/4. That means we can transform it
+	to full whole notes (1/1).
+*/
+#define WHOLE_NOTES_PER_MINUTE (MUSIC_BPM / 4.f)
+
+inline 
+size_t
+GetMusicFrames(size_t SampleRate)
+{
+	float FSRate = (float)SampleRate;
+	float fTemp = ceilf(WHOLE_NOTES_COUNT / WHOLE_NOTES_PER_MINUTE * 60.f  * FSRate);
+
+	return (size_t)fTemp;
+}
+
+typedef struct  
+{
+	float fResonance;
+	float fFrequency;
+	size_t FilterType;
+} FILTER_STRUCT;
 
 typedef struct  
 {
@@ -65,6 +88,7 @@ float GetSoundWorkerProcess();
 boolean IsSoundWorkerEnded();
 boolean IsMusicEnd();
 
+DWORD GetSampleRate();
 boolean ProcessSoundWorker(SOUNDDEVICE_INFO* pInfo);
 void SoundWorker(float* FileData, size_t DataSize, int Channels);
 void DestroySoundWorker();

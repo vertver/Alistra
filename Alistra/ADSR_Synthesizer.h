@@ -10,10 +10,14 @@
 */
 typedef struct
 {
+	int iEnvelopeStage;
+	float fEnvelopeLevel;
 	float fAttack;
 	float fDecay;
 	float fSustain;
 	float fRelease;
+	float fAttackCurve;
+	float fReleaseCurve;
 } ADSR_STRUCT;
 
 typedef struct
@@ -36,15 +40,11 @@ typedef struct
 
 typedef struct  
 {
-	float fTime;
+	float fRoomSize;
+	float fFeedback;
+	float fCrosstalk;
 	float fMix;
 } REVERB_STRUCT;
-
-typedef struct  
-{
-	float fFrequency;
-	float fResonance;
-} FILTER_STRUCT;
 
 inline
 float
@@ -52,8 +52,13 @@ GetNoteFrequency(
 	float Note
 )
 {
-	return (440 * powf(2, (Note - 69) / 12.0));
+	/*
+		Midi note to frequency
+	*/
+	return (8.1757989156437073336828122976022f * powf(1.0594630943592952645618252949463f, Note));
 }
+
+void InitSynthesis(size_t gSampleRate);
 
 /*
 	Use index of synth for multithread processing

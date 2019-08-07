@@ -87,7 +87,7 @@ RealEntryPoint(
 	}
 
 	/*
-		Load process loop. We are here while our demo is not initiated
+		Load process loop. We are here while our demo is not initialized
 	*/
 	while (!isInited)
 	{
@@ -102,7 +102,7 @@ RealEntryPoint(
 		else
 		{
 			isEnd = IsRenderWorkDone();
-			SetLoadProcess((GetRenderLoadProcess() * 0.5f));
+			SetLoadProcess(GetRenderLoadProcess());
 		}
 
 		isInited = isEnd;

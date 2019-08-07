@@ -4,6 +4,44 @@ SYNTH_STRUCT SynthsStruct[MAX_SYNTHS];
 int SynthsCount = 0;
 
 float pSynthBuffer[2][SYNTHBUFFER_SIZE];
+LONGLONG CurrentPosition = -1;
+size_t GlobalSampleRate = 0;
+
+inline 
+void
+NextSampleInterval(
+	MUSIC_INTERVAL* pCurrentInterval
+)
+{
+	CurrentPosition++;
+
+
+}
+
+inline
+void
+ProcessSynthesis(
+	SYNTH_STRUCT SynthStructure, 
+	float** pBuffers, 
+	size_t Frames
+)
+{
+	for (size_t i = 0; i < Frames; i++)
+	{
+		MUSIC_INTERVAL ThisInterval = { 0 };
+		NextSampleInterval(&ThisInterval);
+
+
+	}
+}
+
+void
+InitSynthesis(
+	size_t gSampleRate
+)
+{
+	GlobalSampleRate = gSampleRate;
+}
 
 void 
 AddSynth(
@@ -26,10 +64,6 @@ ProcessSynth(
 	size_t Frames
 )
 {
-	for (size_t i = 0; i < Frames; i++)
-	{
-
-	}
 }
 
 void 
@@ -40,3 +74,4 @@ ResetSynth()
 		memset(pSynthBuffer[i], 0, SYNTHBUFFER_SIZE * sizeof(float));
 	}
 }
+

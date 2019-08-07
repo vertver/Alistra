@@ -3,8 +3,9 @@
 
 void ProcessFadeOut(float** pBuffers, size_t Frames);
 
-void ProcessReverb(REVERB_STRUCT* pReverbStruct, float** pBuffers, size_t Frames);
-void ResetReverb();
+void ProcessFilter(FILTER_STRUCT* FilterStruct, size_t SynthIndex, float** pBuffers, size_t Frames);
+void ResetFilter(size_t SynthIndex);
 
-void ProcessFilter(FILTER_STRUCT* pFilterStruct, float** pBuffers, size_t Frames);
-void ResetFilter(FILTER_STRUCT* pFilterStruct, float** pBuffers, size_t Frames);
+void InitReverb(REVERB_STRUCT* pReverbStruct, size_t SampleRate);
+void ProcessReverb(float DryWet, float** pBuffers, size_t Frames);
+void ResetReverb();
