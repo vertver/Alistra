@@ -14,6 +14,8 @@
 #include "Math/Vector.h"
 #include <math.h>
 
+#define ZeroMemoryObject(object) ZeroMemory(object, sizeof(*(object)))
+
 typedef struct 
 {
     FLOAT3 Pos;
@@ -61,6 +63,13 @@ ID3D11PixelShader*              pPixelShader        = NULL;
 ID3D11Buffer*                   pVertexBuffer       = NULL;
 ID3D11Buffer*                   pIndexBuffer        = NULL;
 ID3D11Buffer*                   pMatrixBuffer       = NULL;
+
+ID3D11Texture2D*                pNoiseTexture       = NULL;
+ID3D11Texture2D*                pNoiseTextureSRV    = NULL;
+ID3D11ComputeShader*            pComputeShader      = NULL;
+ID3D11UnorderedAccessView*      pUAV                = NULL;
+ID3D11ShaderResourceView*       pSRV                = NULL;
+
 
 PFN_D3D11_CREATE_DEVICE_AND_SWAP_CHAIN pD3D11CreateDeviceAndSwapChain = NULL;
 
@@ -163,10 +172,69 @@ char InitPixelShader()
     return true;
 }
 
+char InitComputeShader()
+{
+    ID3DBlob* csBlob = NULL;
+    const boolean hr = CompileShaderFromFile(L"TestCompute.hlsl", "CSMain", "cs_5_0", &csBlob);
+
+    if (!hr) return false;
+
+    const HRESULT computeResult = pDevice->lpVtbl->CreateComputeShader(pDevice, csBlob->lpVtbl->GetBufferPointer(csBlob), csBlob->lpVtbl->GetBufferSize(csBlob), NULL, &pComputeShader);
+
+    _RELEASE(csBlob);
+    if(FAILED(computeResult))
+    {
+        return false;
+    }
+
+    D3D11_TEXTURE2D_DESC texDesc;
+    ZeroMemoryObject(&texDesc);
+    texDesc.Width = 1024;
+    texDesc.Height = 1024;
+    texDesc.MipLevels = texDesc.ArraySize = 1;
+    texDesc.Format = DXGI_FORMAT_R32_FLOAT;
+    texDesc.SampleDesc.Count = 1;
+    texDesc.Usage = D3D11_USAGE_DEFAULT;
+    texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
+    texDesc.CPUAccessFlags = 0;
+    texDesc.MiscFlags = 0;
+
+    if(FAILED(ID3D11Device_CreateTexture2D(pDevice, &texDesc, NULL, &pNoiseTexture)))
+    {
+        return false;
+    }
+
+    D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+    ZeroMemoryObject(&uavDesc);
+    uavDesc.Format = texDesc.Format;
+    uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
+    uavDesc.Texture2D.MipSlice = 0;
+
+    if(FAILED(ID3D11Device_CreateUnorderedAccessView(pDevice, (ID3D11Resource*)pNoiseTexture, &uavDesc, &pUAV)))
+    {
+        return false;
+    }
+   
+    ID3D11DeviceContext_CopyResource(pContext, (ID3D11Resource*)pNoiseTextureSRV, (ID3D11Resource*) pNoiseTexture);
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+    ZeroMemoryObject(&srvDesc);
+    srvDesc.Format = texDesc.Format;
+    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MostDetailedMip = 0;
+    srvDesc.Texture2D.MipLevels = 1;
+    if(FAILED(ID3D11Device_CreateShaderResourceView(pDevice, (ID3D11Resource*)pNoiseTextureSRV, &srvDesc, &pSRV)))
+    {
+        return false;
+    }
+
+    return true;
+}
+
 void SetProjectionMatrix(float width, float height)
 {
 	D3D11_VIEWPORT viewport;
-    float aspect = 1.0f;
+    float aspect;
     float left = -5.0f;
     float right = 5.0f;
     float bottom = -5.0f;
@@ -201,13 +269,6 @@ void SetProjectionMatrix(float width, float height)
 
 char InitGeometry(D3D11_VIEWPORT *view_port)
 {
-    const boolean vertexShader = InitVertexShader();
-
-    if (!vertexShader) return false;
-
-    const boolean pixelShader = InitPixelShader();
-    if (!pixelShader) return false;
-
     Vertex vertices[] =
     {
         { {-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, 1.0f, 1.0f} },
@@ -221,7 +282,7 @@ char InitGeometry(D3D11_VIEWPORT *view_port)
     };
 
     D3D11_BUFFER_DESC bufferDesc;
-    ZeroMemory(&bufferDesc, sizeof(bufferDesc));
+    ZeroMemoryObject(&bufferDesc);
     
     bufferDesc.Usage = D3D11_USAGE_DEFAULT;
     bufferDesc.ByteWidth = sizeof(Vertex) * 8;
@@ -229,7 +290,7 @@ char InitGeometry(D3D11_VIEWPORT *view_port)
     bufferDesc.CPUAccessFlags = 0;
 
     D3D11_SUBRESOURCE_DATA data;
-    ZeroMemory(&data, sizeof(data));
+    ZeroMemoryObject(&data);
     data.pSysMem = vertices;
 
     HRESULT hr = pDevice->lpVtbl->CreateBuffer(pDevice, &bufferDesc, &data, &pVertexBuffer);
@@ -501,6 +562,16 @@ ResizeBuffers:
 	// Create the viewport.
 	ID3D11DeviceContext_RSSetViewports(pContext, 1, &viewport);
 
+    const boolean vertexShader = InitVertexShader();
+
+    if (!vertexShader) return false;
+
+    const boolean pixelShader = InitPixelShader();
+    if (!pixelShader) return false;
+
+    const boolean computeShader = InitComputeShader();
+    if (!computeShader) return false;
+
     boolean geometry = InitGeometry(&viewport);
 
     if (!geometry) return false;
@@ -589,7 +660,7 @@ void BindShaderMatrix()
     matrix_buffer.mView = MATRIX4Transpose(&g_View);
     matrix_buffer.mProjection = MATRIX4Transpose(&g_Projection);
 
-    ID3D11DeviceContext_UpdateSubresource(pContext, (ID3D11Resource*)pMatrixBuffer, 0, NULL, &matrix_buffer, 0, 0);\
+    ID3D11DeviceContext_UpdateSubresource(pContext, (ID3D11Resource*)pMatrixBuffer, 0, NULL, &matrix_buffer, 0, 0);
     ID3D11DeviceContext_VSSetShader(pContext, pVertexShader, NULL, 0);
     ID3D11DeviceContext_PSSetShader(pContext, pPixelShader, NULL, 0);
     ID3D11DeviceContext_VSSetConstantBuffers(pContext, 0, 1, &pMatrixBuffer);
@@ -606,7 +677,7 @@ boolean
 RenderDraw()
 {
 	static boolean isFirst = true;
-	HRESULT hr = 0;
+	HRESULT hr;
 
 #ifdef DEBUG
 	static LARGE_INTEGER Freq;

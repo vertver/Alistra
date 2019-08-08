@@ -1,5 +1,6 @@
 #pragma once
 #include "Base.h"
+#include <math.h>
 
 #define SIZEOF_NAME 256
 #define MUSIC_BPM 140.f
