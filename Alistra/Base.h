@@ -12,7 +12,7 @@ typedef struct
 #define true 1
 #define false 0
 
-#define _RELEASE(p)                       { if(p){(p->lpVtbl)->Release(p); (p)=NULL;} }
+#define _RELEASE(p)                       { if(p){(p)->Release(); (p)=NULL;} }
 
 #define BASE_WIDTH 1280
 #define BASE_HEIGHT 720

@@ -1,6 +1,5 @@
 #pragma once
 #include "Base.h"
-#include <math.h>
 
 #define SIZEOF_NAME 256
 #define MUSIC_BPM 140.f
@@ -69,27 +68,27 @@ typedef struct
 	char szGUID[256];
 } SOUNDDEVICE_INFO;
 
-boolean InitSound(char* OutputId, char* InputId);
+bool InitSound(char* OutputId, char* InputId);
 void DestroySound();
 
-boolean PlayAudio();
-boolean StopAudio();
+bool PlayAudio();
+bool StopAudio();
 
-boolean EnumerateInputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCount);
-boolean EnumerateOutputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCount);
+bool EnumerateInputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCount);
+bool EnumerateOutputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCount);
 
-boolean IsPlayingStarted();
+bool IsPlayingStarted();
 
 /*
 	Sound size in frames
 */
-boolean CreateSoundWorker(boolean* pIsDoneBool);
+bool CreateSoundWorker(boolean* pIsDoneBool);
 void SoundWorkerProc(void* pParams);
 float GetSoundWorkerProcess();
-boolean IsSoundWorkerEnded();
-boolean IsMusicEnd();
+bool IsSoundWorkerEnded();
+bool IsMusicEnd();
 
 DWORD GetSampleRate();
-boolean ProcessSoundWorker(SOUNDDEVICE_INFO* pInfo);
+bool ProcessSoundWorker(SOUNDDEVICE_INFO* pInfo);
 void SoundWorker(float* FileData, size_t DataSize, int Channels);
 void DestroySoundWorker();

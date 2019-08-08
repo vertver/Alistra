@@ -1,5 +1,3 @@
-Texture2D<float> noiseTex : register(t0);
-
 //--------------------------------------------------------------------------------------
 // Constant Buffer Variables
 //--------------------------------------------------------------------------------------
@@ -22,7 +20,7 @@ struct VS_OUTPUT
 //--------------------------------------------------------------------------------------
 VS_OUTPUT VS( float4 Pos : POSITION, float4 Color : COLOR )
 {
-    VS_OUTPUT output;
+    VS_OUTPUT output = (VS_OUTPUT)0;
     //float4 pos = float4(Pos, 1.0);
     output.Pos = mul( Pos, World );
     output.Pos = mul( output.Pos, View );

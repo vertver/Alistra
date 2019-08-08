@@ -4,7 +4,7 @@ SYNTH_STRUCT SynthsStruct[MAX_SYNTHS];
 int SynthsCount = 0;
 
 float pSynthBuffer[2][SYNTHBUFFER_SIZE];
-LONGLONG CurrentPosition = -1;
+size_t CurrentPosition = 0;
 size_t GlobalSampleRate = 0;
 
 inline 
@@ -13,9 +13,9 @@ NextSampleInterval(
 	MUSIC_INTERVAL* pCurrentInterval
 )
 {
+
+
 	CurrentPosition++;
-
-
 }
 
 inline

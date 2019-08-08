@@ -95,13 +95,13 @@ GetSleepTime(
 	return (DWORD)fRet;
 }
 
-boolean
+bool
 IsSoundWorkerEnded()
 {
 	return (WaitForSingleObject(hSoundWorkEnded, 0) == WAIT_OBJECT_0);
 }
 
-boolean
+bool
 IsPlayingStarted()
 {
 	return (WaitForSingleObject(hWasapiStartEvent, 0) == WAIT_OBJECT_0);
@@ -112,7 +112,7 @@ SoundWorkerProc(
 	void* pParams
 )
 {
-	boolean* pIsDone = (void*)pParams;
+	bool* pIsDone = (bool*)pParams;
 
 	/*
 		Process all sound by sound worker
@@ -122,7 +122,7 @@ SoundWorkerProc(
 	SetEvent(hSoundWorkEnded);
 }
 
-boolean
+bool
 CreateSoundWorker(
 	boolean* pIsDoneBool
 )
@@ -178,7 +178,7 @@ WasapiThreadProc(
 			/*
 				Get count of samples who can be updated now
 			*/
-			hr = InitedDevices.pOutputClient->lpVtbl->GetCurrentPadding(InitedDevices.pOutputClient, &StreamPadding);
+			hr = InitedDevices.pOutputClient->GetCurrentPadding(&StreamPadding);
 			if (FAILED(hr)) { goto EndFuck; }
 
 			INT32 AvailableFrames = BufLength;
@@ -192,7 +192,7 @@ WasapiThreadProc(
 					In this case, "GetBuffer" function can be failed if 
 					buffer length is too much for us
 				*/
-				hr = InitedDevices.pRenderClient->lpVtbl->GetBuffer(InitedDevices.pRenderClient, AvailableFrames, &pByte);
+				hr = InitedDevices.pRenderClient->GetBuffer(AvailableFrames, &pByte);
 				if (SUCCEEDED(hr))
 				{
 					/*
@@ -215,13 +215,13 @@ WasapiThreadProc(
 				/*
 					If we can't release buffer - close invalid host
 				*/
-				hr = InitedDevices.pRenderClient->lpVtbl->ReleaseBuffer(InitedDevices.pRenderClient, AvailableFrames, 0);
+				hr = InitedDevices.pRenderClient->ReleaseBuffer(AvailableFrames, 0);
 				if (FAILED(hr))
 				{
 					goto EndFuck;
 				}
 
-				hr = InitedDevices.pOutputClient->lpVtbl->GetCurrentPadding(InitedDevices.pOutputClient, &StreamPadding);
+				hr = InitedDevices.pOutputClient->GetCurrentPadding(&StreamPadding);
 				if (FAILED(hr)) { goto EndFuck; }
 
 				AvailableFrames = BufLength;
@@ -265,13 +265,13 @@ InitSound(
 
 	if (!InitedDevices.pInputDeviceInfo)
 	{
-		InitedDevices.pInputDeviceInfo = HeapAlloc(GetProcessHeap(), 0, sizeof(SOUNDDEVICE_INFO));
+		InitedDevices.pInputDeviceInfo = (SOUNDDEVICE_INFO*)HeapAlloc(GetProcessHeap(), 0, sizeof(SOUNDDEVICE_INFO));
 		memset(InitedDevices.pInputDeviceInfo, 0, sizeof(SOUNDDEVICE_INFO));
 	}
 
 	if (!InitedDevices.pOutputDeviceInfo)
 	{
-		InitedDevices.pOutputDeviceInfo = HeapAlloc(GetProcessHeap(), 0, sizeof(SOUNDDEVICE_INFO));
+		InitedDevices.pOutputDeviceInfo = (SOUNDDEVICE_INFO*)HeapAlloc(GetProcessHeap(), 0, sizeof(SOUNDDEVICE_INFO));
 		memset(InitedDevices.pOutputDeviceInfo, 0, sizeof(SOUNDDEVICE_INFO));
 	}
 
@@ -311,7 +311,7 @@ InitSound(
 	/*
 		Create enumerator for single device object
 	*/
-	if (SUCCEEDED(CoCreateInstance(&A_CLSID_IMMDeviceEnumerator, NULL, CLSCTX_INPROC_SERVER, &A_IID_IMMDeviceEnumerator, &deviceEnumerator)))
+	if (SUCCEEDED(CoCreateInstance(A_CLSID_IMMDeviceEnumerator, NULL, CLSCTX_INPROC_SERVER, A_IID_IMMDeviceEnumerator, (void**)&deviceEnumerator)))
 	{
 		if (OutputId)
 		{
@@ -324,7 +324,7 @@ InitSound(
 					WASAPI can open device by host id string, so we just copy GUID 
 					of device and that works! Maybe :/
 				*/
-				deviceEnumerator->lpVtbl->GetDevice(deviceEnumerator, szString, &InitedDevices.pOutputDevice);
+				deviceEnumerator->GetDevice(szString, &InitedDevices.pOutputDevice);
 			}
 			else
 			{
@@ -335,12 +335,12 @@ InitSound(
 
 		if (!InitedDevices.pOutputDevice)
 		{
-			if (SUCCEEDED(deviceEnumerator->lpVtbl->EnumAudioEndpoints(deviceEnumerator, eRender, DEVICE_STATE_ACTIVE, &pEndPoints)))
+			if (SUCCEEDED(deviceEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pEndPoints)))
 			{
 				/*
 					if all methods failed - set default device
 				*/
-				if (FAILED(deviceEnumerator->lpVtbl->GetDefaultAudioEndpoint(deviceEnumerator, eRender, eMultimedia, &InitedDevices.pOutputDevice)))
+				if (FAILED(deviceEnumerator->GetDefaultAudioEndpoint(eRender, eMultimedia, &InitedDevices.pOutputDevice)))
 				{
 					_RELEASE(deviceEnumerator);
 					_RELEASE(pEndPoints);
@@ -357,7 +357,7 @@ InitSound(
 			if (MultiByteToWideChar(CP_UTF8, 0, OutputId, (int)strlen(OutputId), szString, 256) <= 0)
 			{
 				// note: WASAPI can open device by host id string
-				deviceEnumerator->lpVtbl->GetDevice(deviceEnumerator, szString, &InitedDevices.pInputDevice);
+				deviceEnumerator->GetDevice(szString, &InitedDevices.pInputDevice);
 			}
 			else
 			{
@@ -368,12 +368,12 @@ InitSound(
 
 		if (!InitedDevices.pInputDevice)
 		{
-			if (SUCCEEDED(deviceEnumerator->lpVtbl->EnumAudioEndpoints(deviceEnumerator, eCapture, DEVICE_STATE_ACTIVE, &pEndPoints)))
+			if (SUCCEEDED(deviceEnumerator->EnumAudioEndpoints(eCapture, DEVICE_STATE_ACTIVE, &pEndPoints)))
 			{
 				/*
 					if all methods failed - set default device
 				*/
-				if (FAILED(deviceEnumerator->lpVtbl->GetDefaultAudioEndpoint(deviceEnumerator, eCapture, eConsole, &InitedDevices.pInputDevice)))
+				if (FAILED(deviceEnumerator->GetDefaultAudioEndpoint(eCapture, eConsole, &InitedDevices.pInputDevice)))
 				{
 					_RELEASE(deviceEnumerator);
 					_RELEASE(pEndPoints);
@@ -385,7 +385,7 @@ InitSound(
 		/*
 			Activate input and output device
 		*/
-		if (FAILED(InitedDevices.pOutputDevice->lpVtbl->Activate(InitedDevices.pOutputDevice, &A_IID_IAudioClient, CLSCTX_ALL, NULL, &pTempOutputClient)))
+		if (FAILED(InitedDevices.pOutputDevice->Activate(A_IID_IAudioClient, CLSCTX_ALL, NULL, (void**)&pTempOutputClient)))
 		{
 			_RELEASE(deviceEnumerator);
 			_RELEASE(pTempInputClient);
@@ -395,18 +395,18 @@ InitSound(
 
 		if (InitedDevices.pInputDevice)
 		{
-			InitedDevices.pInputDevice->lpVtbl->Activate(InitedDevices.pInputDevice, &A_IID_IAudioClient, CLSCTX_ALL, NULL, &pTempInputClient);
+			InitedDevices.pInputDevice->Activate(A_IID_IAudioClient, CLSCTX_ALL, NULL, (void**)&pTempInputClient);
 		}
 
 		/*
 			Open property store for output device
 		*/
-		if (SUCCEEDED(InitedDevices.pOutputDevice->lpVtbl->OpenPropertyStore(InitedDevices.pOutputDevice, STGM_READ, &pProperty)))
+		if (SUCCEEDED(InitedDevices.pOutputDevice->OpenPropertyStore(STGM_READ, &pProperty)))
 		{
 			PropVariantInit(&value);
 
 			// get WAVEFORMATEX struct
-			if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &APKEY_AudioEngine_DeviceFormat, &value)))
+			if (SUCCEEDED(pProperty->GetValue(APKEY_AudioEngine_DeviceFormat, &value)))
 			{
 				// note: it can be WAVEFORMAT struct, so we copy by smallest size
 				memcpy(&waveFormat, value.blob.pBlobData, min(sizeof(WAVEFORMATEX), (value.blob.cbSize ? value.blob.cbSize : sizeof(WAVEFORMAT))));
@@ -416,7 +416,7 @@ InitSound(
 			PropVariantInit(&value);
 
 			// get device name 
-			if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &APKEY_Device_FriendlyName, &value)))
+			if (SUCCEEDED(pProperty->GetValue(APKEY_Device_FriendlyName, &value)))
 			{
 				if (value.vt == VT_LPWSTR)
 				{
@@ -448,12 +448,12 @@ InitSound(
 		/*
 			Open property store for input device
 		*/
-		if (SUCCEEDED(InitedDevices.pInputDevice->lpVtbl->OpenPropertyStore(InitedDevices.pInputDevice, STGM_READ, &pProperty)))
+		if (SUCCEEDED(InitedDevices.pInputDevice->OpenPropertyStore(STGM_READ, &pProperty)))
 		{
 			PropVariantInit(&value);
 
 			// get WAVEFORMATEX struct
-			if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &APKEY_AudioEngine_DeviceFormat, &value)))
+			if (SUCCEEDED(pProperty->GetValue(APKEY_AudioEngine_DeviceFormat, &value)))
 			{
 				// note: it can be WAVEFORMAT struct, so we copy by smallest size
 				memcpy(&waveFormat, value.blob.pBlobData, min(sizeof(WAVEFORMATEX), (value.blob.cbSize ? value.blob.cbSize : sizeof(WAVEFORMAT))));
@@ -463,7 +463,7 @@ InitSound(
 			PropVariantInit(&value);
 
 			// get device name 
-			if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &APKEY_Device_FriendlyName, &value)))
+			if (SUCCEEDED(pProperty->GetValue(APKEY_Device_FriendlyName, &value)))
 			{
 				if (value.vt == VT_LPWSTR)
 				{
@@ -502,7 +502,7 @@ InitSound(
 			WAVEFORMATEX* pTempWfx = NULL;
 			UINT32 BufSize = 0;
 
-			if (SUCCEEDED(pTempInputClient->lpVtbl->GetMixFormat(pTempInputClient, &pTempWfx)))
+			if (SUCCEEDED(pTempInputClient->GetMixFormat(&pTempWfx)))
 			{
 				InitedDevices.pInputDeviceInfo->Fmt.IsFloat = (pTempWfx->wFormatTag == WAVE_FORMAT_IEEE_FLOAT);
 				
@@ -525,7 +525,7 @@ InitSound(
 				}
 
 				// it's can be failed, if device is AC97 
-				if (FAILED(pTempInputClient->lpVtbl->GetDevicePeriod(pTempInputClient, &refTimeDefault, &refTimeMin)))
+				if (FAILED(pTempInputClient->GetDevicePeriod(&refTimeDefault, &refTimeMin)))
 				{
 					refTimeDefault = 1000000;			// default device period - 100 msecs
 				}
@@ -533,12 +533,12 @@ InitSound(
 				/*
 					Initialize capture client
 				*/
-				if (SUCCEEDED(pTempInputClient->lpVtbl->Initialize(pTempInputClient, AUDCLNT_SHAREMODE_SHARED, 0, refTimeDefault, 0, pTempWfx, NULL)))
+				if (SUCCEEDED(pTempInputClient->Initialize(AUDCLNT_SHAREMODE_SHARED, 0, refTimeDefault, 0, pTempWfx, NULL)))
 				{
 					/*
 						Get buffer size for our capture client
 					*/
-					if (FAILED(pTempInputClient->lpVtbl->GetBufferSize(pTempInputClient, &BufSize)))
+					if (FAILED(pTempInputClient->GetBufferSize(&BufSize)))
 					{
 						BufSize = (UINT32)((float)InitedDevices.pInputDeviceInfo->Fmt.SampleRate / 10.f);
 					}
@@ -548,7 +548,7 @@ InitSound(
 					/*
 						Init capture service
 					*/
-					if (FAILED(pTempInputClient->lpVtbl->GetService(pTempInputClient, &A_IID_IAudioCaptureClient, &InitedDevices.pCaptureClient)))
+					if (FAILED(pTempInputClient->GetService(A_IID_IAudioCaptureClient, (void**)&InitedDevices.pCaptureClient)))
 					{
 						_RELEASE(pTempInputClient);
 						_RELEASE(InitedDevices.pInputDevice);
@@ -583,7 +583,7 @@ InitSound(
 			WAVEFORMATEX* pTempWfx = NULL;
 			UINT32 BufSize = 0;
 
-			if (SUCCEEDED(pTempOutputClient->lpVtbl->GetMixFormat(pTempOutputClient, &pTempWfx)))
+			if (SUCCEEDED(pTempOutputClient->GetMixFormat(&pTempWfx)))
 			{
 				InitedDevices.pOutputDeviceInfo->Fmt.IsFloat = (pTempWfx->wFormatTag == WAVE_FORMAT_IEEE_FLOAT);
 
@@ -604,7 +604,7 @@ InitSound(
 				}
 
 				// it's can be failed, if device is AC97 
-				if (FAILED(pTempOutputClient->lpVtbl->GetDevicePeriod(pTempOutputClient, &refTimeDefault, &refTimeMin)))
+				if (FAILED(pTempOutputClient->GetDevicePeriod(&refTimeDefault, &refTimeMin)))
 				{
 					refTimeDefault = 1000000;			// default device period - 100 msecs
 				}
@@ -614,12 +614,12 @@ InitSound(
 				*/
 				if (refTimeDefault < 300000) refTimeDefault = 1000000;
 
-				if (SUCCEEDED(pTempOutputClient->lpVtbl->Initialize(pTempOutputClient, AUDCLNT_SHAREMODE_SHARED, 0, refTimeDefault, 0, pTempWfx, NULL)))
+				if (SUCCEEDED(pTempOutputClient->Initialize(AUDCLNT_SHAREMODE_SHARED, 0, refTimeDefault, 0, pTempWfx, NULL)))
 				{
 					/*
 						Get buffer size for our capture client
 					*/
-					if (FAILED(pTempOutputClient->lpVtbl->GetBufferSize(pTempOutputClient, &BufSize)))
+					if (FAILED(pTempOutputClient->GetBufferSize(&BufSize)))
 					{
 						BufSize = (UINT32)((float)InitedDevices.pOutputDeviceInfo->Fmt.SampleRate / 10.f);
 					}
@@ -629,7 +629,7 @@ InitSound(
 					/*
 						Init capture service
 					*/
-					if (FAILED(pTempOutputClient->lpVtbl->GetService(pTempOutputClient, &A_IID_IAudioRenderClient, &InitedDevices.pRenderClient)))
+					if (FAILED(pTempOutputClient->GetService(A_IID_IAudioRenderClient, (void**)&InitedDevices.pRenderClient)))
 					{
 						_RELEASE(pTempOutputClient);
 						_RELEASE(InitedDevices.pOutputDevice);
@@ -656,8 +656,8 @@ InitSound(
 		}
 	}
 
-	pTempInputClient->lpVtbl->QueryInterface(pTempInputClient, &A_IID_IAudioClient, &InitedDevices.pInputClient);
-	pTempOutputClient->lpVtbl->QueryInterface(pTempOutputClient, &A_IID_IAudioClient, &InitedDevices.pOutputClient);
+	pTempInputClient->QueryInterface(A_IID_IAudioClient, (void**)&InitedDevices.pInputClient);
+	pTempOutputClient->QueryInterface(A_IID_IAudioClient, (void**)&InitedDevices.pOutputClient);
 
 	_RELEASE(deviceEnumerator);	
 	_RELEASE(pTempInputClient);
@@ -747,14 +747,14 @@ PlayAudio()
 		InitedDevices.pInputBuffer = NULL;
 	}
 
-	InitedDevices.pOutputBuffer = HeapAlloc(GetProcessHeap(), 0, InitedDevices.pOutputDeviceInfo->Fmt.Frames * sizeof(float));
+	InitedDevices.pOutputBuffer = (float*)HeapAlloc(GetProcessHeap(), 0, InitedDevices.pOutputDeviceInfo->Fmt.Frames * sizeof(float));
 
 	if (InitedDevices.pInputClient)
 	{
-		InitedDevices.pInputBuffer = HeapAlloc(GetProcessHeap(), 0, InitedDevices.pInputDeviceInfo->Fmt.Frames * sizeof(float));
+		InitedDevices.pInputBuffer = (float*)HeapAlloc(GetProcessHeap(), 0, InitedDevices.pInputDeviceInfo->Fmt.Frames * sizeof(float));
 	}
 
-	InitedDevices.pOutputClient->lpVtbl->Start(InitedDevices.pOutputClient);
+	InitedDevices.pOutputClient->Start();
 
 	return (!!BaseCreateThread(WasapiThreadProc, &thInfo, false));
 }
@@ -764,8 +764,8 @@ StopAudio()
 {
 	if (InitedDevices.pOutputClient)
 	{
-		InitedDevices.pOutputClient->lpVtbl->Stop(InitedDevices.pOutputClient);
-		InitedDevices.pOutputClient->lpVtbl->Reset(InitedDevices.pOutputClient);
+		InitedDevices.pOutputClient->Stop();
+		InitedDevices.pOutputClient->Reset();
 	}
 
 	return true;
@@ -781,10 +781,10 @@ EnumerateInputDevices(
 	IMMDeviceEnumerator* deviceEnumerator = NULL;
 	IMMDeviceCollection* pEndPoints = NULL;
 
-	if (SUCCEEDED(CoCreateInstance(&A_CLSID_IMMDeviceEnumerator, NULL, CLSCTX_INPROC_SERVER, &A_IID_IMMDeviceEnumerator, &deviceEnumerator)))
+	if (SUCCEEDED(CoCreateInstance(A_CLSID_IMMDeviceEnumerator, NULL, CLSCTX_INPROC_SERVER, A_IID_IMMDeviceEnumerator, (void**)&deviceEnumerator)))
 	{
-		deviceEnumerator->lpVtbl->EnumAudioEndpoints(deviceEnumerator, eCapture, DEVICE_STATE_ACTIVE, &pEndPoints);
-		pEndPoints->lpVtbl->GetCount(pEndPoints, &CountOfOutputs);
+		deviceEnumerator->EnumAudioEndpoints(eCapture, DEVICE_STATE_ACTIVE, &pEndPoints);
+		pEndPoints->GetCount(&CountOfOutputs);
 	}
 	else
 	{
@@ -808,17 +808,17 @@ EnumerateInputDevices(
 		IAudioClient* pAudioClient = NULL;
 
 		// get device
-		pEndPoints->lpVtbl->Item(pEndPoints, (UINT)i, &pDevice);
+		pEndPoints->Item((UINT)i, &pDevice);
 
-		if (pDevice->lpVtbl)
+		if (pDevice)
 		{
 			(*pSoundInfos)[i]->Fmt.Index = (BYTE)i;
 
-			if (SUCCEEDED(pDevice->lpVtbl->Activate(pDevice, &A_IID_IAudioClient, CLSCTX_ALL, NULL, (void**)&pAudioClient)))
+			if (SUCCEEDED(pDevice->Activate(A_IID_IAudioClient, CLSCTX_ALL, NULL, (void**)&pAudioClient)))
 			{
 				char lpNewString[256];
 				LPWSTR lpString = NULL;
-				pDevice->lpVtbl->GetId(pDevice, &lpString);
+				pDevice->GetId(&lpString);
 
 				memset(lpNewString, 0, sizeof(lpNewString));
 
@@ -831,11 +831,11 @@ EnumerateInputDevices(
 				CoTaskMemFree(lpString);
 
 				// get property store for format and device name
-				if (SUCCEEDED(pDevice->lpVtbl->OpenPropertyStore(pDevice, STGM_READ, &pProperty)))
+				if (SUCCEEDED(pDevice->OpenPropertyStore(STGM_READ, &pProperty)))
 				{
 					PropVariantInit(&value);
 
-					if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &APKEY_AudioEngine_DeviceFormat, &value)))
+					if (SUCCEEDED(pProperty->GetValue(APKEY_AudioEngine_DeviceFormat, &value)))
 					{
 						memcpy(&waveFormat, value.blob.pBlobData, min(sizeof(WAVEFORMATEX), value.blob.cbSize));
 					}
@@ -843,7 +843,7 @@ EnumerateInputDevices(
 					PropVariantClear(&value);
 					PropVariantInit(&value);
 
-					if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &APKEY_Device_FriendlyName, &value)))
+					if (SUCCEEDED(pProperty->GetValue(APKEY_Device_FriendlyName, &value)))
 					{
 						if (value.vt == VT_LPWSTR)
 						{
@@ -874,7 +874,7 @@ EnumerateInputDevices(
 				if (pAudioClient)
 				{
 					UINT32 HostSize = 0;
-					pAudioClient->lpVtbl->GetBufferSize(pAudioClient, &HostSize);
+					pAudioClient->GetBufferSize(&HostSize);
 
 					(*pSoundInfos)[i]->Fmt.Frames = HostSize ? HostSize : waveFormat.nSamplesPerSec / 10;		// 100ms latency
 				}
@@ -904,10 +904,10 @@ EnumerateOutputDevices(
 	IMMDeviceEnumerator* deviceEnumerator = NULL;
 	IMMDeviceCollection* pEndPoints = NULL;
 
-	if (SUCCEEDED(CoCreateInstance(&A_CLSID_IMMDeviceEnumerator, NULL, CLSCTX_INPROC_SERVER, &A_IID_IMMDeviceEnumerator, &deviceEnumerator)))
+	if (SUCCEEDED(CoCreateInstance(A_CLSID_IMMDeviceEnumerator, NULL, CLSCTX_INPROC_SERVER, A_IID_IMMDeviceEnumerator, (void**)&deviceEnumerator)))
 	{
-		deviceEnumerator->lpVtbl->EnumAudioEndpoints(deviceEnumerator, eRender, DEVICE_STATE_ACTIVE, &pEndPoints);
-		pEndPoints->lpVtbl->GetCount(pEndPoints, &CountOfOutputs);
+		deviceEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pEndPoints);
+		pEndPoints->GetCount(&CountOfOutputs);
 	}
 	else
 	{
@@ -931,17 +931,17 @@ EnumerateOutputDevices(
 		IAudioClient* pAudioClient = NULL;
 
 		// get device
-		pEndPoints->lpVtbl->Item(pEndPoints, (UINT)i, &pDevice);
+		pEndPoints->Item((UINT)i, &pDevice);
 
-		if (pDevice->lpVtbl)
+		if (pDevice)
 		{
 			(*pSoundInfos)[i]->Fmt.Index = (BYTE)i;
 
-			if (SUCCEEDED(pDevice->lpVtbl->Activate(pDevice, &A_IID_IAudioClient, CLSCTX_ALL, NULL, (void**)&pAudioClient)))
+			if (SUCCEEDED(pDevice->Activate(A_IID_IAudioClient, CLSCTX_ALL, NULL, (void**)&pAudioClient)))
 			{
 				char lpNewString[256];
 				LPWSTR lpString = NULL;
-				pDevice->lpVtbl->GetId(pDevice, &lpString);
+				pDevice->GetId(&lpString);
 
 				memset(lpNewString, 0, sizeof(lpNewString));
 
@@ -954,11 +954,11 @@ EnumerateOutputDevices(
 				CoTaskMemFree(lpString);
 
 				// get property store for format and device name
-				if (SUCCEEDED(pDevice->lpVtbl->OpenPropertyStore(pDevice, STGM_READ, &pProperty)))
+				if (SUCCEEDED(pDevice->OpenPropertyStore(STGM_READ, &pProperty)))
 				{
 					PropVariantInit(&value);
 
-					if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &APKEY_AudioEngine_DeviceFormat, &value)))
+					if (SUCCEEDED(pProperty->GetValue(APKEY_AudioEngine_DeviceFormat, &value)))
 					{
 						memcpy(&waveFormat, value.blob.pBlobData, min(sizeof(WAVEFORMATEX), value.blob.cbSize));
 					}
@@ -966,7 +966,7 @@ EnumerateOutputDevices(
 					PropVariantClear(&value);
 					PropVariantInit(&value);
 
-					if (SUCCEEDED(pProperty->lpVtbl->GetValue(pProperty, &APKEY_Device_FriendlyName, &value)))
+					if (SUCCEEDED(pProperty->GetValue(APKEY_Device_FriendlyName, &value)))
 					{
 						if (value.vt == VT_LPWSTR)
 						{
@@ -996,7 +996,7 @@ EnumerateOutputDevices(
 				if (pAudioClient)
 				{
 					UINT32 HostSize = 0;
-					pAudioClient->lpVtbl->GetBufferSize(pAudioClient, &HostSize);
+					pAudioClient->GetBufferSize(&HostSize);
 
 					(*pSoundInfos)[i]->Fmt.Frames = HostSize ? HostSize : waveFormat.nSamplesPerSec / 10;		// 100ms latency
 				}

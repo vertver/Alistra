@@ -47,7 +47,7 @@ size_t BufferPosition = 0;
 size_t ProcessedFrames = 0;
 size_t FramesCount = 0;
 
-boolean
+bool
 ProcessSoundWorker(
 	SOUNDDEVICE_INFO* pInfo
 )
@@ -68,7 +68,7 @@ ProcessSoundWorker(
 		return false;
 	}
 
-	BaseBuffer = HeapAlloc(GetProcessHeap(), 0, (size_t)larg.QuadPart);
+	BaseBuffer = (float*)HeapAlloc(GetProcessHeap(), 0, (size_t)larg.QuadPart);
 	ReadFile(hFileToPlay, BaseBuffer, (DWORD)larg.QuadPart, &dwTemp, 0);
 
 	FramesCount = (size_t)(larg.QuadPart / sizeof(float));
@@ -172,7 +172,7 @@ SoundWorker(
 	BufferPosition += sizeToRead;
 }
 
-boolean
+bool
 IsMusicEnd()
 {
 	return (BufferPosition >= FramesCount);
