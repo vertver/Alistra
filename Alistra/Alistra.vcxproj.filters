@@ -1,40 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="entry_point.c" />
-    <ClCompile Include="Base_Entry.c" />
-    <ClCompile Include="Base_Window.c">
-      <Filter>Render and window</Filter>
-    </ClCompile>
-    <ClCompile Include="Base_Sound.c">
-      <Filter>Sound</Filter>
-    </ClCompile>
-    <ClCompile Include="Base_Thread.c" />
-    <ClCompile Include="Base_D3D11.c">
-      <Filter>Render and window</Filter>
-    </ClCompile>
-    <ClCompile Include="Base_System.c" />
     <ClCompile Include="Base_Camera.c">
       <Filter>Render and window</Filter>
     </ClCompile>
-    <ClCompile Include="SoundWorker.c">
-      <Filter>Sound\Sound worker</Filter>
+    <ClCompile Include="Base_Entry.cpp" />
+    <ClCompile Include="Base_Sound.cpp" />
+    <ClCompile Include="Base_System.cpp" />
+    <ClCompile Include="Base_Thread.cpp" />
+    <ClCompile Include="Base_Window.cpp" />
+    <ClCompile Include="entry_point.cpp" />
+    <ClCompile Include="LPFilter.cpp" />
+    <ClCompile Include="Reverb.cpp" />
+    <ClCompile Include="SoundWorker.cpp" />
+    <ClCompile Include="Base_D3D11.cpp">
+      <Filter>Render and window</Filter>
     </ClCompile>
-    <ClCompile Include="ADSR_Synthesizer.c">
-      <Filter>Sound\Synth</Filter>
-    </ClCompile>
-    <ClCompile Include="Math\Camera.c">
-      <Filter>Math</Filter>
-    </ClCompile>
-    <ClCompile Include="Math\Matrix.c">
-      <Filter>Math</Filter>
-    </ClCompile>
-    <ClCompile Include="Math\Misc_Math.c">
-      <Filter>Math</Filter>
-    </ClCompile>
-    <ClCompile Include="Math\Vector.c">
-      <Filter>Math</Filter>
-    </ClCompile>
+    <ClCompile Include="ADSR_Synthesizer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base.h" />
@@ -54,29 +36,8 @@
     <ClInclude Include="ADSR_Synthesizer.h">
       <Filter>Sound\Synth</Filter>
     </ClInclude>
-    <ClInclude Include="LPFilter.c">
-      <Filter>Sound\Synth\Effects</Filter>
-    </ClInclude>
-    <ClInclude Include="Reverb.c">
-      <Filter>Sound\Synth\Effects</Filter>
-    </ClInclude>
     <ClInclude Include="Base_Synth.h">
       <Filter>Sound\Synth</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\Base_Math.h">
-      <Filter>Math</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\Camera.h">
-      <Filter>Math</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\Matrix.h">
-      <Filter>Math</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\Misc_Math.h">
-      <Filter>Math</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\Vector.h">
-      <Filter>Math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

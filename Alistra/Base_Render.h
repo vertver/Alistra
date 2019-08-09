@@ -3,11 +3,11 @@
 /*
 	Our render stuff
 */
-char InitRender(char IsImgui);
+bool InitRender(bool IsImgui);
 void DestroyRender();
 
-boolean ResizeRender(int Width, int Height);
-boolean RenderDraw();
+bool ResizeRender(int Width, int Height);
+bool RenderDraw();
 
 LPDWORD GetMainWidth();
 LPDWORD GetMainHeight();

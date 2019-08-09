@@ -1,30 +1,26 @@
 #include "Base.h"
 #include "Base_Window.h"
 #include "Base_Render.h"
-#include <stdio.h>
+#include <cstdio>
 
+#include <d3d11.h>
 #include <d3dcompiler.h>
 
-#define COBJMACROS
-#include <d3d11.h>
-
-#include "Math/Base_Math.h"
-#include "Math/Camera.h"
-#include "Math/Matrix.h"
-#include "Math/Vector.h"
-#include <math.h>
+#define _XM_NO_INTRINSICS_ 
+#include <DirectXMath.h>
+#include <cmath>
 
 typedef struct 
 {
-    FLOAT3 Pos;
-    FLOAT4 Color;
+    DirectX::XMFLOAT3 Pos;
+    DirectX::XMFLOAT4 Color;
 } Vertex;
 
 typedef struct 
 {
-    MATRIX4 mWorld;
-    MATRIX4 mView;
-    MATRIX4 mProjection;
+    DirectX::XMMATRIX mWorld;
+    DirectX::XMMATRIX mView;
+    DirectX::XMMATRIX mProjection;
 } MatrixBuffer;
 
 //#pragma comment(lib, "dxguid.lib")
@@ -36,9 +32,9 @@ float BackGroundTest[] = { 0.1f, 0.1f, 0.1f, 1.0f };
 DEFINE_IID(ID3D11Texture2D, 6f15aaf2, d208, 4e89, 9a, b4, 48, 95, 35, d3, 4f, 9c);
 
 // it is never ImGui
-boolean bImgui = false;
-boolean bVSync = true;
-boolean bDone = false;
+bool bImgui = false;
+bool bVSync = true;
+bool bDone = false;
 
 float FOV = 0.f;
 float ScreenAspectRatio = 0.f;
@@ -47,56 +43,51 @@ float fRenderLoadProcess = 0.0f;
 DWORD GlobalWidth = 0;
 DWORD GlobalHeight = 0;
 
-IDXGISwapChain*                 pSwapChain          = NULL;
-ID3D11Device*                   pDevice             = NULL;
-ID3D11DeviceContext*            pContext            = NULL;
-ID3D11RenderTargetView*         pRTView             = NULL;
-ID3D11InputLayout*              pInputLayout        = NULL;
-ID3D11Texture2D*                pDepthStencilBuffer = NULL;
-ID3D11DepthStencilState*        pDepthStencilState  = NULL;
-ID3D11DepthStencilView*         pDepthStencilView   = NULL;
-ID3D11RasterizerState*          pRasterState        = NULL;
-ID3D11VertexShader*             pVertexShader       = NULL;
-ID3D11PixelShader*              pPixelShader        = NULL;
-ID3D11Buffer*                   pVertexBuffer       = NULL;
-ID3D11Buffer*                   pIndexBuffer        = NULL;
-ID3D11Buffer*                   pMatrixBuffer       = NULL;
+IDXGISwapChain*                 pSwapChain          = nullptr;
+ID3D11Device*                   pDevice             = nullptr;
+ID3D11DeviceContext*            pContext            = nullptr;
+ID3D11RenderTargetView*         pRTView             = nullptr;
+ID3D11InputLayout*              pInputLayout        = nullptr;
+ID3D11Texture2D*                pDepthStencilBuffer = nullptr;
+ID3D11DepthStencilState*        pDepthStencilState  = nullptr;
+ID3D11DepthStencilView*         pDepthStencilView   = nullptr;
+ID3D11RasterizerState*          pRasterState        = nullptr;
+ID3D11VertexShader*             pVertexShader       = nullptr;
+ID3D11PixelShader*              pPixelShader        = nullptr;
+ID3D11Buffer*                   pVertexBuffer       = nullptr;
+ID3D11Buffer*                   pIndexBuffer        = nullptr;
+ID3D11Buffer*                   pMatrixBuffer       = nullptr;
 
-PFN_D3D11_CREATE_DEVICE_AND_SWAP_CHAIN pD3D11CreateDeviceAndSwapChain = NULL;
+PFN_D3D11_CREATE_DEVICE_AND_SWAP_CHAIN pD3D11CreateDeviceAndSwapChain = nullptr;
 
 LPCWSTR g_ShaderFile = L"Test.fx";
 
-MATRIX4 g_World;
-MATRIX4 g_View;
-MATRIX4 g_Projection;
+DirectX::XMMATRIX g_World;
+DirectX::XMMATRIX g_View;
+DirectX::XMMATRIX g_Projection;
 
-boolean CompileShaderFromFile(_In_ LPCWSTR srcFile, _In_ LPCSTR entryPoint, _In_ LPCSTR shaderModel, _Outptr_ ID3DBlob** blob)
+bool CompileShaderFromFile(_In_ LPCWSTR srcFile, _In_ LPCSTR entryPoint, _In_ LPCSTR shaderModel, _Outptr_ ID3DBlob** blob)
 {
     if (!srcFile || !entryPoint || !shaderModel || !blob)
         return false;
 
-    *blob = NULL;
+    *blob = nullptr;
 
     UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined( DEBUG ) || defined( _DEBUG )
     flags |= D3DCOMPILE_DEBUG;
 #endif
 
-    ID3DBlob* shaderBlob = NULL;
-    ID3DBlob* errorBlob = NULL;
+    ID3DBlob* shaderBlob = nullptr;
+    ID3DBlob* errorBlob = nullptr;
 
     size_t SrcDataSize = 0;
     void *data = 0;
-    const boolean loaded = LoadFile(srcFile, &data,&SrcDataSize);
+    const bool loaded = LoadFile(srcFile, &data,&SrcDataSize);
 
     if (!loaded) return false;
 
-   /* const HRESULT hr = D3DCompile(data, SrcDataSize, NULL, NULL, NULL,
-        entryPoint, shaderModel,
-        flags, 0, &shaderBlob, &errorBlob);*/
-
-
-    const HRESULT hr = D3DCompile(data, SrcDataSize, NULL, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+    const HRESULT hr = D3DCompile(data, SrcDataSize, nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
             entryPoint, shaderModel, flags, 0, &shaderBlob, &errorBlob);
 
     if (FAILED(hr))
@@ -104,7 +95,7 @@ boolean CompileShaderFromFile(_In_ LPCWSTR srcFile, _In_ LPCSTR entryPoint, _In_
         HeapFree(GetProcessHeap(), 0, data);
         if (errorBlob)
         {
-            OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+            OutputDebugStringA(static_cast<char*>(errorBlob->GetBufferPointer()));
         }
 
         if (errorBlob)
@@ -118,14 +109,14 @@ boolean CompileShaderFromFile(_In_ LPCWSTR srcFile, _In_ LPCSTR entryPoint, _In_
     return true;
 }
 
-char InitVertexShader()
+bool InitVertexShader()
 {
-    ID3DBlob* vsBlob = NULL;
-    const boolean hr = CompileShaderFromFile(g_ShaderFile, "VS", "vs_5_0", &vsBlob);
+    ID3DBlob* vsBlob = nullptr;
+    const bool hr = CompileShaderFromFile(g_ShaderFile, "VS", "vs_5_0", &vsBlob);
 
     if (!hr) return false;
 
-    if (FAILED(pDevice->CreateVertexShader(vsBlob->GetBufferPointer(vsBlob), vsBlob->GetBufferSize(vsBlob), NULL, &pVertexShader)))
+    if (FAILED(pDevice->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &pVertexShader)))
     {
         _RELEASE(vsBlob);
         return false;
@@ -138,35 +129,31 @@ char InitVertexShader()
     };
 
     const UINT numElements = ARRAYSIZE(layout);
-    const HRESULT layoutResult = pDevice->lpVtbl->CreateInputLayout(pDevice, layout, numElements, vsBlob->lpVtbl->GetBufferPointer(vsBlob), vsBlob->lpVtbl->GetBufferSize(vsBlob), &pInputLayout);
+    const HRESULT layoutResult = pDevice->CreateInputLayout(layout, numElements, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &pInputLayout);
     _RELEASE(vsBlob);
     if (FAILED(layoutResult)) return false;
 
-    pContext->lpVtbl->IASetInputLayout(pContext, pInputLayout);
+    pContext->IASetInputLayout(pInputLayout);
 
     return true;
 }
 
-char InitPixelShader()
+bool InitPixelShader()
 {
-    ID3DBlob *psBlob = NULL;
-    const boolean hr = CompileShaderFromFile(g_ShaderFile, "PS", "ps_5_0", &psBlob);
+    ID3DBlob *psBlob = nullptr;
+    const bool hr = CompileShaderFromFile(g_ShaderFile, "PS", "ps_5_0", &psBlob);
     if (!hr) return false;
 
-    const HRESULT pixelResult = pDevice->lpVtbl->CreatePixelShader(pDevice, psBlob->lpVtbl->GetBufferPointer(psBlob), psBlob->lpVtbl->GetBufferSize(psBlob), NULL, &pPixelShader);
+    const HRESULT pixelResult = pDevice->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &pPixelShader);
     _RELEASE(psBlob);
-    if(FAILED(pixelResult))
-    {
-        return false;
-    }
 
-    return true;
+    return FAILED(pixelResult) ? false : true;
 }
 
 void SetProjectionMatrix(float width, float height)
 {
 	D3D11_VIEWPORT viewport;
-    float aspect = 1.0f;
+    float aspect;
     float left = -5.0f;
     float right = 5.0f;
     float bottom = -5.0f;
@@ -185,29 +172,22 @@ void SetProjectionMatrix(float width, float height)
         top *= aspect;
     }
 
-    g_Projection = OrtographicOffCenterLH(left, right, bottom, top, nearZ, farZ);
+    g_Projection = DirectX::XMMatrixOrthographicOffCenterLH(left, right, bottom, top, nearZ, farZ);
 
 	// Setup the viewport for rendering.
-	viewport.Width = (float)width;
-	viewport.Height = (float)height;
+	viewport.Width = static_cast<float>(width);
+	viewport.Height = static_cast<float>(height);
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
 
 	// Create the viewport.
-	ID3D11DeviceContext_RSSetViewports(pContext, 1, &viewport);
+    pContext->RSSetViewports(1, &viewport);
 }
 
 char InitGeometry(D3D11_VIEWPORT *view_port)
 {
-    const boolean vertexShader = InitVertexShader();
-
-    if (!vertexShader) return false;
-
-    const boolean pixelShader = InitPixelShader();
-    if (!pixelShader) return false;
-
     Vertex vertices[] =
     {
         { {-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, 1.0f, 1.0f} },
@@ -232,13 +212,13 @@ char InitGeometry(D3D11_VIEWPORT *view_port)
     ZeroMemory(&data, sizeof(data));
     data.pSysMem = vertices;
 
-    HRESULT hr = pDevice->lpVtbl->CreateBuffer(pDevice, &bufferDesc, &data, &pVertexBuffer);
+    HRESULT hr = pDevice->CreateBuffer(&bufferDesc, &data, &pVertexBuffer);
     if (FAILED(hr)) return false;
 
     UINT stride = sizeof(Vertex);
     UINT offset = 0;
 
-    ID3D11DeviceContext_IASetVertexBuffers(pContext, 0, 1, &pVertexBuffer, &stride, &offset);
+    pContext->IASetVertexBuffers(0, 1, &pVertexBuffer, &stride, &offset);
 
     UINT indices[] =
     {
@@ -266,26 +246,28 @@ char InitGeometry(D3D11_VIEWPORT *view_port)
     bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
     bufferDesc.CPUAccessFlags = 0;
     data.pSysMem = indices;
-    hr = pDevice->lpVtbl->CreateBuffer(pDevice, &bufferDesc, &data, &pIndexBuffer);
+    hr = pDevice->CreateBuffer(&bufferDesc, &data, &pIndexBuffer);
     if (FAILED(hr)) return false;
 
-    ID3D11DeviceContext_IASetIndexBuffer(pContext, pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-    ID3D11DeviceContext_IASetPrimitiveTopology(pContext, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    pContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+    pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     MatrixBuffer constants;
-    g_World = Matrix4Identity(); //MATRIX4RotationY(3.14159f / 4.0f);
+    g_World = DirectX::XMMatrixIdentity();
 
-    VECTOR cameraPos = VECTORSet(0.0f, 0.0f, 5.0f, 0.0f);
-    VECTOR cameraTarget = VECTORSet(0.0f, 0.0f, 0.0f, 0.0f);
-    VECTOR Up = VECTORSet(0.0f, 1.0f, 0.0f, 0.0f);
+    auto cameraPos = DirectX::XMVectorSet(0.0f, 0.0f, 5.0f, 0.0f);
+    auto cameraTarget = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+    auto Up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
-    g_View = Matrix4LookAtLH(&cameraPos, &cameraTarget, &Up);
+
+    g_View = DirectX::XMMatrixLookAtLH(cameraPos, cameraTarget, Up);
+    //g_View = Matrix4LookAtLH();
 
     SetProjectionMatrix(view_port->Width, view_port->Height);
 
-    constants.mWorld = MATRIX4Transpose(&g_World);
-    constants.mView = MATRIX4Transpose(&g_View);
-    constants.mProjection = MATRIX4Transpose(&g_Projection);
+    constants.mWorld = DirectX::XMMatrixTranspose(g_World);
+    constants.mView = DirectX::XMMatrixTranspose(g_View);
+    constants.mProjection = DirectX::XMMatrixTranspose(g_Projection);
 
     bufferDesc.Usage = D3D11_USAGE_DEFAULT;
     bufferDesc.ByteWidth = sizeof(MatrixBuffer);
@@ -293,21 +275,21 @@ char InitGeometry(D3D11_VIEWPORT *view_port)
     bufferDesc.CPUAccessFlags = 0;
     data.pSysMem = &constants;
 
-    hr = pDevice->lpVtbl->CreateBuffer(pDevice, &bufferDesc, &data, &pMatrixBuffer);
+    hr = pDevice->CreateBuffer(&bufferDesc, &data, &pMatrixBuffer);
     if (FAILED(hr)) return false;
 
     return true;
 }
 
-char 
+bool 
 InitRender(
-	char IsImgui
+	bool IsImgui
 )
 {
 	int Times = 0;
 	D3D_FEATURE_LEVEL feature_level;
 	DXGI_SWAP_CHAIN_DESC swap_chain_desc;
-	ID3D11Texture2D* back_buffer = NULL;
+	ID3D11Texture2D* back_buffer = nullptr;
 	D3D11_RENDER_TARGET_VIEW_DESC desc;
 	D3D11_TEXTURE2D_DESC depthBufferDesc;
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
@@ -322,7 +304,7 @@ InitRender(
 	{
 
 		HMODULE hLib = LoadLibraryA("d3d11.dll");
-		pD3D11CreateDeviceAndSwapChain = (PFN_D3D11_CREATE_DEVICE_AND_SWAP_CHAIN)GetProcAddress(hLib, "D3D11CreateDeviceAndSwapChain");
+		pD3D11CreateDeviceAndSwapChain = reinterpret_cast<PFN_D3D11_CREATE_DEVICE_AND_SWAP_CHAIN>(GetProcAddress(hLib, "D3D11CreateDeviceAndSwapChain"));
 
 		if (!pD3D11CreateDeviceAndSwapChain) return false;
 	}
@@ -341,61 +323,60 @@ InitRender(
 	swap_chain_desc.SampleDesc.Quality = 0;
 	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swap_chain_desc.BufferCount = 1;
-	swap_chain_desc.OutputWindow = hWnd;
+	swap_chain_desc.OutputWindow = static_cast<HWND>(hWnd);
 	swap_chain_desc.Windowed = TRUE;
 	swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	swap_chain_desc.Flags = 0;
 
-	if (FAILED(pD3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, NULL, 0, D3D11_SDK_VERSION, &swap_chain_desc, &pSwapChain, &pDevice, &feature_level, &pContext)))
+	if (FAILED(pD3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION, &swap_chain_desc, &pSwapChain, &pDevice, &feature_level, &pContext)))
 	{
 		/*
 			If hardware device fails, then try WARP high-performance
 			software rasterizer, this is useful for RDP sessions
 		*/
-		hr = pD3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_WARP, NULL, 0, NULL, 0, D3D11_SDK_VERSION, &swap_chain_desc, &pSwapChain, &pDevice, &feature_level, &pContext);
+		hr = pD3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION, &swap_chain_desc, &pSwapChain, &pDevice, &feature_level, &pContext);
 		if (FAILED(hr)) return false;
 	}
 
 	_RELEASE(pRTView);
-
-	ID3D11DeviceContext_OMSetRenderTargets(pContext, 0, NULL, NULL);
+    pContext->OMSetRenderTargets(0, nullptr, nullptr);
 
 ResizeBuffers:
 	/*
 		Wait a lot of time, because this fail can be raised by
 		user restarted video driver
 	*/
-	hr = IDXGISwapChain_ResizeBuffers(pSwapChain, 0, BASE_WIDTH, BASE_HEIGHT, DXGI_FORMAT_UNKNOWN, 0);
+    hr = pSwapChain->ResizeBuffers(0, BASE_WIDTH, BASE_HEIGHT, DXGI_FORMAT_UNKNOWN, 0);
 	if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
 	{
 		Sleep(500);
 		goto ResizeBuffers;
 	}
-	else if (hr == DXGI_ERROR_DRIVER_INTERNAL_ERROR)
-	{
-		Sleep(500);
-		Times++;
+    if (hr == DXGI_ERROR_DRIVER_INTERNAL_ERROR)
+    {
+        Sleep(500);
+        Times++;
 
-		if (Times >= 3)
-		{
-			return false;
-		}
+        if (Times >= 3)
+        {
+            return false;
+        }
 
-		goto ResizeBuffers;
-	}
-	else if (FAILED(hr))
-	{
-		return false;
-	}
+        goto ResizeBuffers;
+    }
+    if (FAILED(hr))
+    {
+        return false;
+    }
 
-	memset(&desc, 0, sizeof(desc));
+    memset(&desc, 0, sizeof(desc));
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 
-	hr = IDXGISwapChain_GetBuffer(pSwapChain, 0, &A_IID_ID3D11Texture2D, (void **)&back_buffer);
-	hr = ID3D11Device_CreateRenderTargetView(pDevice, (ID3D11Resource *)back_buffer, &desc, &pRTView);
+    hr = pSwapChain->GetBuffer(0, A_IID_ID3D11Texture2D, reinterpret_cast<void **>(&back_buffer));
+    hr = pDevice->CreateRenderTargetView(back_buffer, &desc, &pRTView);
 
-	ID3D11Texture2D_Release(back_buffer);
+    back_buffer->Release();
 
 	// Initialize the description of the depth buffer.
 	ZeroMemory(&depthBufferDesc, sizeof(depthBufferDesc));
@@ -414,7 +395,7 @@ ResizeBuffers:
 	depthBufferDesc.MiscFlags = 0;
 
 	// Create the texture for the depth buffer using the filled out description.
-	if (FAILED(ID3D11Device_CreateTexture2D(pDevice, &depthBufferDesc, NULL, &pDepthStencilBuffer)))
+	if (FAILED(pDevice->CreateTexture2D(&depthBufferDesc, nullptr, &pDepthStencilBuffer)))
 	{
 		return false;
 	}
@@ -444,12 +425,12 @@ ResizeBuffers:
 	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
 	// Create the depth stencil state.
-	if (FAILED(ID3D11Device_CreateDepthStencilState(pDevice, &depthStencilDesc, &pDepthStencilState)))
+    
+	if (FAILED(pDevice->CreateDepthStencilState(&depthStencilDesc, &pDepthStencilState)))
 	{
 		return false;
 	}
-
-	ID3D11DeviceContext_OMSetDepthStencilState(pContext, pDepthStencilState, 1);
+    pContext->OMSetDepthStencilState(pDepthStencilState, 1);
 
 	// Initialize the depth stencil view.
 	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
@@ -467,7 +448,7 @@ ResizeBuffers:
 
 
 	// Bind the render target view and depth stencil buffer to the output render pipeline.
-	ID3D11DeviceContext_OMSetRenderTargets(pContext, 1, &pRTView, pDepthStencilView);
+    pContext->OMSetRenderTargets(1, &pRTView, pDepthStencilView);
 
 	// Setup the raster description which will determine how and what polygons will be drawn.
 	rasterDesc.AntialiasedLineEnable = false;
@@ -482,36 +463,41 @@ ResizeBuffers:
 	rasterDesc.SlopeScaledDepthBias = 0.0f;
 
 	// Create the rasterizer state from the description we just filled out.
-	if (FAILED(ID3D11Device_CreateRasterizerState(pDevice, &rasterDesc, &pRasterState)))
+	if (FAILED(pDevice->CreateRasterizerState(&rasterDesc, &pRasterState)))
 	{
 		return false;
 	}
 
 	// Now set the rasterizer state.
-	ID3D11DeviceContext_RSSetState(pContext, pRasterState);
+    pContext->RSSetState(pRasterState);
 
 	// Setup the viewport for rendering.
-	viewport.Width = (float)BASE_WIDTH;
-	viewport.Height = (float)BASE_HEIGHT;
+	viewport.Width = static_cast<float>(BASE_WIDTH);
+	viewport.Height = static_cast<float>(BASE_HEIGHT);
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
 
 	// Create the viewport.
-	ID3D11DeviceContext_RSSetViewports(pContext, 1, &viewport);
+    pContext->RSSetViewports(1, &viewport);
 
-    boolean geometry = InitGeometry(&viewport);
+    const bool vertexShader = InitVertexShader();
 
-    if (!geometry) return false;
+    if (!vertexShader) return false;
 
-	return true;
+    const bool pixelShader = InitPixelShader();
+    if (!pixelShader) return false;
+
+    bool geometry = InitGeometry(&viewport);
+
+    return geometry;
 }
 
 void 
 DestroyRender()
 {
-	if (pContext) ID3D11DeviceContext_ClearState(pContext);
+	if (pContext) pContext->ClearState();
 
 	_RELEASE(pRTView);
 	_RELEASE(pContext);
@@ -537,7 +523,7 @@ GetMainHeight()
 	return &GlobalHeight;
 }
 
-boolean
+bool
 ResizeRender(
 	int Width,
 	int Height
@@ -545,35 +531,34 @@ ResizeRender(
 {
 	if (!Width || !Height || !pContext) return false;
 
-	ID3D11Texture2D* back_buffer = NULL;
+	ID3D11Texture2D* back_buffer = nullptr;
 	D3D11_RENDER_TARGET_VIEW_DESC desc;
-	HRESULT hr = 0;
 
-	if (pRTView) ID3D11RenderTargetView_Release(pRTView);
+    if (pRTView) pRTView->Release();
 
-	ID3D11DeviceContext_OMSetRenderTargets(pContext, 0, NULL, NULL);
+    pContext->OMSetRenderTargets(0, nullptr, nullptr);
 
 ResizeBuffers:
-	hr = IDXGISwapChain_ResizeBuffers(pSwapChain, 0, Width, Height, DXGI_FORMAT_UNKNOWN, 0);
+    const HRESULT hr = pSwapChain->ResizeBuffers(0, Width, Height, DXGI_FORMAT_UNKNOWN, 0);
 	if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
 	{
 		Sleep(500);
 		goto ResizeBuffers;
 	}
-	else if (hr == DXGI_ERROR_DRIVER_INTERNAL_ERROR)
-	{
-		return false;
-	}
+    if (hr == DXGI_ERROR_DRIVER_INTERNAL_ERROR)
+    {
+        return false;
+    }
 
-	memset(&desc, 0, sizeof(desc));
+    memset(&desc, 0, sizeof(desc));
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 
-	hr = IDXGISwapChain_GetBuffer(pSwapChain, 0, &A_IID_ID3D11Texture2D, (void **)&back_buffer);
-	hr = ID3D11Device_CreateRenderTargetView(pDevice, (ID3D11Resource *)back_buffer, &desc, &pRTView);
+    pSwapChain->GetBuffer(0, A_IID_ID3D11Texture2D, reinterpret_cast<void **>(&back_buffer));
+    pDevice->CreateRenderTargetView(back_buffer, &desc, &pRTView);
 
-	ID3D11Texture2D_Release(back_buffer);
-    SetProjectionMatrix((float)Width, (float)Height);
+    back_buffer->Release();
+    SetProjectionMatrix(static_cast<float>(Width), static_cast<float>(Height));
 
 	GlobalWidth = Width;
 	GlobalHeight = Height;
@@ -585,28 +570,28 @@ void BindShaderMatrix()
 {
     MatrixBuffer matrix_buffer;
 
-    matrix_buffer.mWorld = MATRIX4Transpose(&g_World);
-    matrix_buffer.mView = MATRIX4Transpose(&g_View);
-    matrix_buffer.mProjection = MATRIX4Transpose(&g_Projection);
+    matrix_buffer.mWorld = DirectX::XMMatrixTranspose(g_World);
+    matrix_buffer.mView = DirectX::XMMatrixTranspose(g_View);
+    matrix_buffer.mProjection = DirectX::XMMatrixTranspose(g_Projection);
 
-    ID3D11DeviceContext_UpdateSubresource(pContext, (ID3D11Resource*)pMatrixBuffer, 0, NULL, &matrix_buffer, 0, 0);\
-    ID3D11DeviceContext_VSSetShader(pContext, pVertexShader, NULL, 0);
-    ID3D11DeviceContext_PSSetShader(pContext, pPixelShader, NULL, 0);
-    ID3D11DeviceContext_VSSetConstantBuffers(pContext, 0, 1, &pMatrixBuffer);
+    pContext->UpdateSubresource(pMatrixBuffer, 0, nullptr, &matrix_buffer, 0, 0);
+    pContext->VSSetShader(pVertexShader, nullptr, 0);
+    pContext->PSSetShader(pPixelShader, nullptr, 0);
+    pContext->VSSetConstantBuffers(0, 1, &pMatrixBuffer);
 }
 
 float orbit = 0.0f;
 
 void RenderCube()
 {
-    ID3D11DeviceContext_DrawIndexed(pContext, 36, 0, 0);
+    pContext->DrawIndexed(36, 0, 0);
 }
 float test = 0.0f;
-boolean
+bool
 RenderDraw()
 {
-	static boolean isFirst = true;
-	HRESULT hr = 0;
+	static bool isFirst = true;
+	HRESULT hr;
 
 #ifdef DEBUG
 	static LARGE_INTEGER Freq;
@@ -623,21 +608,23 @@ RenderDraw()
 #endif
 	
     /* Draw */
-	ID3D11DeviceContext_ClearRenderTargetView(pContext, pRTView, BackGroundTest);
+    pContext->ClearRenderTargetView(pRTView, BackGroundTest);
     //ID3D11DeviceContext_ClearDepthStencilView(pContext, pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0.0f);
-    ID3D11DeviceContext_OMSetRenderTargets(pContext, 1, &pRTView, NULL);
+    pContext->OMSetRenderTargets(1, &pRTView, nullptr);
 
     const float radius = 5.0f;
 
-    VECTOR Eye = VECTORSet(sinf(orbit)*radius, 1.0f, -2.0f + cosf(orbit)*radius*2.0f, 0.0f);
-    VECTOR At = VECTORSet(0.0f, 0.0f, 0.0f, 0.0f);
-    VECTOR Up = VECTORSet(0.0f, 1.0f, 0.0f, 0.0f);
-    g_View = Matrix4LookAtLH(&Eye, &At, &Up);
+    const auto cameraPos = DirectX::XMVectorSet(std::sinf(orbit)*radius, 1.0f, -2.0f + std::cosf(orbit)*radius*2.0f, 0.0f);
+    const auto cameraTarget = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+    const auto Up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+
+    g_View = DirectX::XMMatrixLookAtLH(cameraPos, cameraTarget, Up);
 
     BindShaderMatrix();
     RenderCube();
     orbit += 0.005f;
-	hr = IDXGISwapChain_Present(pSwapChain, bVSync, 0);
+    hr = pSwapChain->Present(bVSync, 0);
     
 	/*
 		If we lost device (such as in D3D9), we need to wait it
@@ -646,24 +633,24 @@ RenderDraw()
 	{
 		return false;
 	}
-	else if (hr == DXGI_STATUS_OCCLUDED)
-	{
-		/*
+    if (hr == DXGI_STATUS_OCCLUDED)
+    {
+        /*
 			Window is not visible, so VSync won't work. Let's sleep a bit to reduce CPU usage
 		*/
-		Sleep(10);
-	}
-	else if (FAILED(hr))
-	{
-		return false;
-	}
+        Sleep(10);
+    }
+    else if (FAILED(hr))
+    {
+        return false;
+    }
 
 #ifdef DEBUG
 	LARGE_INTEGER TempTime;
 	QueryPerformanceCounter(&TempTime);
 	AllFramesCount++;
 
-	const float DeltaTime = (float)(TempTime.QuadPart - FpsToShow.QuadPart) / (float)Freq.QuadPart;
+	const float DeltaTime = static_cast<float>(TempTime.QuadPart - FpsToShow.QuadPart) / static_cast<float>(Freq.QuadPart);
 	if (DeltaTime > 0.2f)
 	{
 		FpsToShow.QuadPart = TempTime.QuadPart;
@@ -686,7 +673,7 @@ GetRenderLoadProcess()
 	return fRenderLoadProcess;
 }
 
-boolean
+bool
 IsRenderWorkDone()
 {
 	return true;

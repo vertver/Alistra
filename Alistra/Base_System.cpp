@@ -2,7 +2,7 @@
 #include <versionhelpers.h>
 #pragma comment(lib, "Version.lib")
 
-boolean
+bool
 GetSystemVersion(BASE_OS_VERSION_INFO* pVersion)
 {
 	wchar_t szPath[260];
@@ -66,7 +66,7 @@ GetSystemVersion(BASE_OS_VERSION_INFO* pVersion)
 	return false;
 }
 
-boolean 
+bool 
 LoadFile(const wchar_t* PathToFile, void** OutFile, size_t* OutSize)
 {
 	DWORD dwTemp = 0;

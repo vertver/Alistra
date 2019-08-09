@@ -72,7 +72,7 @@ typedef struct
 } WASAPI_DEVICES;
 
 WASAPI_DEVICES InitedDevices;
-THREAD_INFO thInfo;
+//THREAD_INFO thInfo; ???
 
 typedef enum
 {
@@ -243,7 +243,7 @@ EndFuck:
 	SetEvent(hWasapiThreadEvent);
 }
 
-boolean
+bool
 InitSound(
 	char* OutputId,
 	char* InputId
@@ -727,7 +727,7 @@ DestroySound()
 	}
 }
 
-boolean 
+bool 
 PlayAudio()
 {
 	memset(&thInfo, 0, sizeof(THREAD_INFO));
@@ -759,7 +759,7 @@ PlayAudio()
 	return (!!BaseCreateThread(WasapiThreadProc, &thInfo, false));
 }
 
-boolean 
+bool
 StopAudio()
 {
 	if (InitedDevices.pOutputClient)
@@ -771,7 +771,7 @@ StopAudio()
 	return true;
 }
 
-boolean 
+bool 
 EnumerateInputDevices(
 	SOUNDDEVICE_INFO*** pSoundInfos, 
 	size_t* DevicesCount
@@ -894,7 +894,7 @@ EnumerateInputDevices(
 }
 
 
-boolean
+bool
 EnumerateOutputDevices(
 	SOUNDDEVICE_INFO*** pSoundInfos,
 	size_t* DevicesCount

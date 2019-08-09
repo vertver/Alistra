@@ -1,5 +1,6 @@
 #pragma once
 #include "Base.h"
+#include <cmath>
 
 #define SIZEOF_NAME 256
 #define MUSIC_BPM 140.f
@@ -17,7 +18,7 @@ size_t
 GetMusicFrames(size_t SampleRate)
 {
 	float FSRate = (float)SampleRate;
-	float fTemp = ceilf(WHOLE_NOTES_COUNT / WHOLE_NOTES_PER_MINUTE * 60.f  * FSRate);
+	float fTemp = std::ceilf(WHOLE_NOTES_COUNT / WHOLE_NOTES_PER_MINUTE * 60.f  * FSRate);
 
 	return (size_t)fTemp;
 }

@@ -30,7 +30,7 @@ int WINAPI wWinMain(
 		this string to UTF-8
 	*/
 	lpArgList = CommandLineToArgvW(GetCommandLineW(), &iCount);
-	lpOutArgList = HeapAlloc(GetProcessHeap(), 0, sizeof(void*) * iCount);
+	lpOutArgList = (LPSTR*) HeapAlloc(GetProcessHeap(), 0, sizeof(void*) * iCount);
 
 	/*
 		Parse command line and convert to UTF-8
@@ -47,7 +47,7 @@ int WINAPI wWinMain(
 			if (StringSize)
 			{
 				// allocate string
-				lpOutArgList[i] = HeapAlloc(GetProcessHeap(), 0, ++StringSize);
+				lpOutArgList[i] = (LPSTR) HeapAlloc(GetProcessHeap(), 0, ++StringSize);
 
 				// convert to UTF-8
 				if (!WideCharToMultiByte(CP_UTF8, 0, lpArgList[i], -1, lpOutArgList[i], StringSize, NULL, NULL))

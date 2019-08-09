@@ -9,17 +9,14 @@ typedef struct
 	WORD MarketVersion;			// ex. 1903
 } BASE_OS_VERSION_INFO;
 
-#define true 1
-#define false 0
-
 #define _RELEASE(p)                       { if(p){(p)->Release(); (p)=NULL;} }
 
-#define BASE_WIDTH 1280
-#define BASE_HEIGHT 720
+constexpr unsigned int BASE_WIDTH   { 1280 };
+constexpr unsigned int BASE_HEIGHT  {  720 };
 
 int RealEntryPoint(char** argv, int argc);
-boolean GetSystemVersion(BASE_OS_VERSION_INFO* pVersion);
-boolean LoadFile(const wchar_t* PathToFile, void** OutFile, size_t* OutSize);
+bool GetSystemVersion(BASE_OS_VERSION_INFO* pVersion);
+bool LoadFile(const wchar_t* PathToFile, void** OutFile, size_t* OutSize);
 
 #ifndef GUID_SECT
 #define GUID_SECT

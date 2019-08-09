@@ -2,9 +2,9 @@
 #include "Base_Render.h"
 #include "Base_Thread.h"
 #include "Base_Sound.h"
-#include "stdio.h"
+#include <cstdio>
 
-boolean Window_Flag_Resizeing = false;
+bool Window_Flag_Resizeing = false;
 float fLoadProcess = 0.0f;
 HANDLE hCloseEvent = NULL;
 HANDLE hWaitForInit = NULL;
@@ -225,14 +225,14 @@ CreateMainWindow()
 
 void
 MainWindowLoop(
-	boolean bAudio
+	bool bAudio
 )
 {
 	while (true)
 	{
 		Sleep(5);
 
-		if (GetMainWindowHandle() == NULL)
+		if (GetMainWindowHandle() == nullptr)
 		{
 			break;
 		}

@@ -28,7 +28,7 @@ ProcessFilter(
 			for (size_t u = 0; u < Frames; u++)
 			{
 				float fFreq = FilterStruct->fFrequency;
-				float fFeedback = FilterStruct->fResonance * (1.0 + 1.0 / (1.0 - fFreq));
+				float fFeedback = FilterStruct->fResonance * (1.0f + 1.0f / (1.0f - fFreq));
 
 				fTempValue = pChannelBuffer[u];
 				pTempArray[0] = fFreq * (fTempValue - pTempArray[0] + fFeedback * (pTempArray[0] - pTempArray[1]));
@@ -43,7 +43,7 @@ ProcessFilter(
 			for (size_t u = 0; u < Frames; u++)
 			{
 				float fFreq = FilterStruct->fFrequency;
-				float fFeedback = FilterStruct->fResonance * (1.0 + 1.0 / (1.0 - fFreq));
+				float fFeedback = FilterStruct->fResonance * (1.0f + 1.0f / (1.0f - fFreq));
 
 				fTempValue = pChannelBuffer[u];
 				pTempArray[0] = fFreq * (fTempValue - pTempArray[0] + fFeedback * (pTempArray[0] - pTempArray[1]));
@@ -58,7 +58,7 @@ ProcessFilter(
 			for (size_t u = 0; u < Frames; u++)
 			{
 				float fFreq = FilterStruct->fFrequency;
-				float fFeedback = FilterStruct->fResonance * (1.0 + 1.0 / (1.0 - fFreq));
+				float fFeedback = FilterStruct->fResonance * (1.0f + 1.0f / (1.0f - fFreq));
 
 				fTempValue = pChannelBuffer[u];
 				pTempArray[0] = fFreq * (fTempValue - pTempArray[0] + fFeedback * (pTempArray[0] - pTempArray[1]));
