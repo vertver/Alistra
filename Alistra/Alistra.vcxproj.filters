@@ -5,18 +5,30 @@
       <Filter>Render and window</Filter>
     </ClCompile>
     <ClCompile Include="Base_Entry.cpp" />
-    <ClCompile Include="Base_Sound.cpp" />
     <ClCompile Include="Base_System.cpp" />
     <ClCompile Include="Base_Thread.cpp" />
-    <ClCompile Include="Base_Window.cpp" />
     <ClCompile Include="entry_point.cpp" />
-    <ClCompile Include="LPFilter.cpp" />
-    <ClCompile Include="Reverb.cpp" />
-    <ClCompile Include="SoundWorker.cpp" />
     <ClCompile Include="Base_D3D11.cpp">
       <Filter>Render and window</Filter>
     </ClCompile>
-    <ClCompile Include="ADSR_Synthesizer.cpp" />
+    <ClCompile Include="ADSR_Synthesizer.cpp">
+      <Filter>Sound\Synth\ADSR</Filter>
+    </ClCompile>
+    <ClCompile Include="Base_Sound.cpp">
+      <Filter>Sound\Sound worker</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundWorker.cpp">
+      <Filter>Sound\Sound worker</Filter>
+    </ClCompile>
+    <ClCompile Include="Reverb.cpp">
+      <Filter>Sound\Synth\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="LPFilter.cpp">
+      <Filter>Sound\Synth\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="Base_Window.cpp">
+      <Filter>Render and window</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base.h" />
@@ -34,10 +46,10 @@
       <Filter>Render and window</Filter>
     </ClInclude>
     <ClInclude Include="ADSR_Synthesizer.h">
-      <Filter>Sound\Synth</Filter>
+      <Filter>Sound\Synth\ADSR</Filter>
     </ClInclude>
     <ClInclude Include="Base_Synth.h">
-      <Filter>Sound\Synth</Filter>
+      <Filter>Sound\Synth\ADSR</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
