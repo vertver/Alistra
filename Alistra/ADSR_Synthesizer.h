@@ -36,6 +36,8 @@ typedef struct
 
 	ADSR_STRUCT ADRSFirst;
 	ADSR_STRUCT ADRSSecond;
+
+	WAVE_FMT fmt;
 } SYNTH_STRUCT;
 
 typedef struct  
@@ -48,7 +50,7 @@ typedef struct
 
 inline
 float
-GetNoteFrequency(
+GetMidiNoteFrequency(
 	float Note
 )
 {
@@ -58,12 +60,16 @@ GetNoteFrequency(
 	return (8.1757989156437073336828122976022f * powf(1.0594630943592952645618252949463f, Note));
 }
 
-void InitSynthesis(size_t gSampleRate);
+class CADSRSynthesis
+{
+private:
+	size_t CurrentPosition = 0;
+	float SynthBuffer[SYNTHBUFFER_SIZE];
 
-/*
-	Use index of synth for multithread processing
-*/
-void AddSynth(SYNTH_STRUCT* pSynthStruct, int* pSynthIndex);
+	float NextSample();
 
-void ProcessSynth(int SynthIndex, float** pBuffers, size_t Frames);
-void ResetSynth();
+public:
+	void Initialize(SYNTH_STRUCT* pSynthStruct);
+	void Process(float** pBuffers, size_t Frames);
+	void Reset();
+};

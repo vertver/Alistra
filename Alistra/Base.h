@@ -1,6 +1,35 @@
 #pragma once
 #include <windows.h>
 
+typedef signed char         i8;
+typedef unsigned char       u8;
+typedef signed short        i16;
+typedef unsigned short      u16;
+typedef signed int          i32;
+typedef unsigned int        u32;
+typedef signed long long    i64;
+typedef unsigned long long  u64;
+typedef float               f32;
+typedef double              f64;
+
+typedef signed char         s8;
+typedef signed short        s16;
+typedef signed int          s32;
+typedef signed long long    s64;
+
+typedef u64                 uint64;
+typedef i8                  int8;
+typedef i16                 int16;
+typedef i64                 int64;
+typedef f32                 r32;
+typedef f64                 r64;
+typedef i32                 b32;
+typedef f64                 real64;
+
+typedef char                utf8;
+typedef utf8*               PStr;
+typedef utf8 const*         PConstStr;
+
 typedef struct
 {
 	WORD MajorVersion;			// 6 for Windows Seven

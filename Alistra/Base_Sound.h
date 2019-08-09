@@ -2,6 +2,7 @@
 #include "Base.h"
 #include <cmath>
 
+#define signf(x)  (signbit(x) ?  -1 : 1)
 #define SIZEOF_NAME 256
 #define MUSIC_BPM 140.f
 #define WHOLE_NOTES_COUNT 123.f
@@ -93,3 +94,32 @@ DWORD GetSampleRate();
 bool ProcessSoundWorker(SOUNDDEVICE_INFO* pInfo);
 void SoundWorker(float* FileData, size_t DataSize, int Channels);
 void DestroySoundWorker();
+
+class CFadeOut
+{
+public:
+	void Process(float** pBuffers, size_t Frames);
+};
+
+class CEQFilter
+{
+private:
+	float FloatTempArray[4];
+	FILTER_STRUCT FilterStruct;
+
+public:
+	void Initialize(FILTER_STRUCT* pFilterStruct);
+	void Process(float** pBuffers, size_t Frames);
+	void Reset();
+};
+
+class CReverbEffect
+{
+private:
+	REVERB_STRUCT ReverbStruct;
+
+public:
+	void Initialize(REVERB_STRUCT* pReverbStruct, size_t SampleRate);
+	void Process(float** pBuffers, size_t Frames);
+	void Reset();
+};
