@@ -285,6 +285,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ADSREnvelope.cpp" />
     <ClCompile Include="ADSR_Synthesizer.cpp" />
     <ClCompile Include="Base_Camera.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -300,9 +301,14 @@
     <ClCompile Include="Base_System.cpp" />
     <ClCompile Include="Base_Thread.cpp" />
     <ClCompile Include="Base_Window.cpp" />
+    <ClCompile Include="DemoMixer.cpp" />
     <ClCompile Include="entry_point.cpp" />
+    <ClCompile Include="FadeOut.cpp" />
+    <ClCompile Include="KickGenerator.cpp" />
     <ClCompile Include="LPFilter.cpp" />
+    <ClCompile Include="NoteManager.cpp" />
     <ClCompile Include="Reverb.cpp" />
+    <ClCompile Include="SoftClipper.cpp" />
     <ClCompile Include="SoundWorker.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -321,6 +327,13 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_Crinkler|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="SoftClipper.h" />
+    <ClInclude Include="DemoMixer.h" />
+    <ClInclude Include="KickGenerator.h" />
+    <ClInclude Include="NoteManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="VoiceClass.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,0 +1,63 @@
+#include "ADSR_Synthesizer.h"
+
+void
+CADSREnvelope::Initialize(ADSR_STRUCT* pADSRStruct, f32 SampleRate)
+{
+	memcpy(&ADSRStruct, pADSRStruct, sizeof(ADSR_STRUCT));
+	f32 A = pADSRStruct->fAttack * 0.001f * SampleRate;
+	f32 D = pADSRStruct->fDecay * 0.001f * SampleRate;
+	f32 R = pADSRStruct->fRelease * 0.001f * SampleRate;
+
+	SustainLevel = pADSRStruct->fSustain;
+	AttackKoef = (A <= 0.0) ? 0.0 : exp(-log((1.0 + pADSRStruct->fAttackCurve) / pADSRStruct->fAttackCurve) / A);
+	DecayKoef = (D <= 0.0) ? 0.0 : exp(-log((1.0 + pADSRStruct->fDecayReleaseCurve) / pADSRStruct->fDecayReleaseCurve) / D);
+	ReleaseKoef = (R <= 0.0) ? 0.0 : exp(-log((1.0 + pADSRStruct->fDecayReleaseCurve) / pADSRStruct->fDecayReleaseCurve) / R);
+	AttackBase = (1.0 + pADSRStruct->fAttackCurve) * (1.0 - AttackKoef);
+	DecayBase = (SustainLevel - pADSRStruct->fDecayReleaseCurve) * (1.0 - DecayKoef);
+	ReleaseBase = -pADSRStruct->fDecayReleaseCurve * (1.0 - ReleaseKoef);
+}
+
+void
+CADSREnvelope::Reset()
+{
+	ADSRStruct.iEnvelopeStage = 0;
+}
+
+f32
+CADSREnvelope::NextEnvelope()
+{
+	switch (ADSRStruct.iEnvelopeStage)
+	{
+	case ESTAGE_ATTACK:
+		ADSRStruct.fEnvelopeLevel = ADSRStruct.fEnvelopeLevel * AttackKoef + AttackBase;
+		if (ADSRStruct.fEnvelopeLevel >= 1.0)
+		{
+			ADSRStruct.fEnvelopeLevel = 1.0;
+			ADSRStruct.iEnvelopeStage = ESTAGE_DECAY;
+		}
+		break;
+	case ESTAGE_DECAY:
+		ADSRStruct.fEnvelopeLevel = ADSRStruct.fEnvelopeLevel * DecayKoef + DecayBase;
+		if (ADSRStruct.fEnvelopeLevel <= SustainLevel)
+		{
+			ADSRStruct.fEnvelopeLevel = SustainLevel;
+			ADSRStruct.iEnvelopeStage = ESTAGE_SUSTAIN;
+		}
+		break;
+	case ESTAGE_SUSTAIN:
+		break;
+	case ESTAGE_RELEASE:
+		ADSRStruct.fEnvelopeLevel = ADSRStruct.fEnvelopeLevel* ReleaseKoef + ReleaseBase;
+		if (ADSRStruct.fEnvelopeLevel <= 0.0)
+		{
+			ADSRStruct.fEnvelopeLevel = 0.0;
+			ADSRStruct.iEnvelopeStage = ESTAGE_OFF;
+		}
+		break;
+	default: 
+		ADSRStruct.fEnvelopeLevel = 0.0;
+		break;
+	}
+	
+	return ADSRStruct.fEnvelopeLevel;
+}

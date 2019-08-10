@@ -3,73 +3,80 @@
 #include <math.h>
 
 #define MAX_SYNTHS 24
+#define MAX_POLY 6
 #define SYNTHBUFFER_SIZE 1024
 
-/*
-	2 OSC synthesizer with filter, effects and etc.
-*/
-typedef struct
+enum ESTAGE 
 {
-	int iEnvelopeStage;
-	float fEnvelopeLevel;
-	float fAttack;
-	float fDecay;
-	float fSustain;
-	float fRelease;
-	float fAttackCurve;
-	float fReleaseCurve;
-} ADSR_STRUCT;
+	ESTAGE_ATTACK,
+	ESTAGE_DECAY,
+	ESTAGE_SUSTAIN,
+	ESTAGE_RELEASE,
+	ESTAGE_OFF
+};
 
-typedef struct
+class CADSREnvelope
 {
-	int SynthesisFirst;
-	int SynthesisSecond;
+private:
+	f32 AttackBase;
+	f32 AttackKoef;
+	f32 DecayBase;
+	f32 DecayKoef;
+	f32 ReleaseBase;
+	f32 ReleaseKoef;
+	f32 SustainLevel;
+	ADSR_STRUCT ADSRStruct;
 
-	float fVibratoFirst;
-	float fVibratoSecond;
+public:
+	void Initialize(ADSR_STRUCT* pADSRStruct, f32 SampleRate);
+	void Reset();
 
-	float fSynthStyleFirst;
-	float fSynthStyleSecond;
+	f32 NextEnvelope();
+};
 
-	float fMix;					// 0.5 = 50% of first and 50% of second
-	float fVolume;				// linear volume
-
-	ADSR_STRUCT ADRSFirst;
-	ADSR_STRUCT ADRSSecond;
-
-	WAVE_FMT fmt;
-} SYNTH_STRUCT;
-
-typedef struct  
+class CVoiceClass
 {
-	float fRoomSize;
-	float fFeedback;
-	float fCrosstalk;
-	float fMix;
-} REVERB_STRUCT;
+private:
+	CADSREnvelope adsrEnvelope[MAX_POLY];
+	f32 SampleRate;
+	f32 fPhase[MAX_POLY];
+	f32 fAddPhase[MAX_POLY];
+	f32 fPrevTriangle[MAX_POLY];
+	f32 fPulseWeight[MAX_POLY];
+	f32 fNoiseValue[MAX_POLY];
+	f64 b0[MAX_POLY], b1[MAX_POLY], b2[MAX_POLY];
+	i32 CountVoices;
+	MUSIC_INTERVAL musIntervals;
+	SYNTH_STRUCT SynthStruct;
 
-inline
-float
-GetMidiNoteFrequency(
-	float Note
-)
-{
-	/*
-		Midi note to frequency
-	*/
-	return (8.1757989156437073336828122976022f * powf(1.0594630943592952645618252949463f, Note));
-}
+public:
+	void Initialize(SYNTH_STRUCT* pSynthStruct, f32 fSampleRate);
+	void Reset();
+
+	void Update();
+	void NoteOn(i32 Note, f32 Vel, i32& Voice);
+	void NoteOff(i32 Voice);
+
+	f32 NextSample();
+};
 
 class CADSRSynthesis
 {
 private:
-	size_t CurrentPosition = 0;
-	float SynthBuffer[SYNTHBUFFER_SIZE];
+	CEQFilter eqFilter;
+	CReverbEffect ReverbEffect;
+	CVoiceClass Voices;
+	size_t CurrentPosition;
+	f32 fSampleRate;
+	f32 SynthBuffer[SYNTHBUFFER_SIZE];
 
-	float NextSample();
+	f32 NextSample();
 
 public:
-	void Initialize(SYNTH_STRUCT* pSynthStruct);
-	void Process(float** pBuffers, size_t Frames);
+	void NoteOn(i32 Note, f32 Vel, i32& Voice);
+	void NoteOff(i32 Voice);
+
+	void Initialize(WAVE_FMT fmt, REVERB_STRUCT* pReverbStruct, FILTER_STRUCT* pFilterStruct, SYNTH_STRUCT* pSynthStruct);
+	void Process(f32** pBuffers, size_t Frames);
 	void Reset();
 };

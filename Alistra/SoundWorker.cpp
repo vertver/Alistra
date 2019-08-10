@@ -6,6 +6,7 @@
 
 #define maxmin(a, minimum, maximum)  min(max(a, minimum), maximum)
 
+#if 0
 /*
 	Windows 10 only
 */
@@ -36,6 +37,7 @@ const SOUNDID_PATH SoundsPaths[] =
 	{ 1, L"Ring09" },
 	{ 2, L"Ring02" }
 };
+#endif
 
 WAVEFORMATEX waveFormat;
 HANDLE hFileToPlay = NULL;

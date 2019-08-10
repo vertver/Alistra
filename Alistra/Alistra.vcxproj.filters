@@ -14,11 +14,8 @@
     <ClCompile Include="ADSR_Synthesizer.cpp">
       <Filter>Sound\Synth\ADSR</Filter>
     </ClCompile>
-    <ClCompile Include="Base_Sound.cpp">
-      <Filter>Sound\Sound worker</Filter>
-    </ClCompile>
     <ClCompile Include="SoundWorker.cpp">
-      <Filter>Sound\Sound worker</Filter>
+      <Filter>Sound\Mixer\Sound worker</Filter>
     </ClCompile>
     <ClCompile Include="Reverb.cpp">
       <Filter>Sound\Synth\Effects</Filter>
@@ -29,6 +26,27 @@
     <ClCompile Include="Base_Window.cpp">
       <Filter>Render and window</Filter>
     </ClCompile>
+    <ClCompile Include="FadeOut.cpp">
+      <Filter>Sound\Synth\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="ADSREnvelope.cpp">
+      <Filter>Sound\Synth\ADSR</Filter>
+    </ClCompile>
+    <ClCompile Include="NoteManager.cpp">
+      <Filter>Sound\Synth\Note manager</Filter>
+    </ClCompile>
+    <ClCompile Include="DemoMixer.cpp">
+      <Filter>Sound\Mixer</Filter>
+    </ClCompile>
+    <ClCompile Include="Base_Sound.cpp">
+      <Filter>Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="KickGenerator.cpp">
+      <Filter>Sound\Synth\Kick</Filter>
+    </ClCompile>
+    <ClCompile Include="SoftClipper.cpp">
+      <Filter>Sound\Synth\Effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base.h" />
@@ -37,9 +55,6 @@
     </ClInclude>
     <ClInclude Include="Base_Window.h">
       <Filter>Render and window\headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Base_Sound.h">
-      <Filter>Sound</Filter>
     </ClInclude>
     <ClInclude Include="Base_Thread.h" />
     <ClInclude Include="Base_Camera.h">
@@ -51,6 +66,21 @@
     <ClInclude Include="Base_Synth.h">
       <Filter>Sound\Synth\ADSR</Filter>
     </ClInclude>
+    <ClInclude Include="NoteManager.h">
+      <Filter>Sound\Synth\Note manager</Filter>
+    </ClInclude>
+    <ClInclude Include="DemoMixer.h">
+      <Filter>Sound\Mixer</Filter>
+    </ClInclude>
+    <ClInclude Include="Base_Sound.h">
+      <Filter>Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="KickGenerator.h">
+      <Filter>Sound\Synth\Kick</Filter>
+    </ClInclude>
+    <ClInclude Include="SoftClipper.h">
+      <Filter>Sound\Synth\Effects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Render and window">
@@ -61,9 +91,6 @@
     </Filter>
     <Filter Include="Sound">
       <UniqueIdentifier>{98deccbb-011c-469c-a479-59a857aa1943}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Sound\Sound worker">
-      <UniqueIdentifier>{e98792b9-4544-4c67-87f1-6a4c8bf68efa}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sound\Synth">
       <UniqueIdentifier>{2bf28a5f-a101-4a1b-a482-2aecbd930a83}</UniqueIdentifier>
@@ -77,5 +104,22 @@
     <Filter Include="Math">
       <UniqueIdentifier>{9856fd82-c5d1-42b9-98dc-693e687e9395}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sound\Synth\Note manager">
+      <UniqueIdentifier>{a03695bb-15cb-47ce-bf4c-47a26a26df7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound\Mixer">
+      <UniqueIdentifier>{900d5868-c6df-4c4c-9769-6465b297b77c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound\Mixer\Sound worker">
+      <UniqueIdentifier>{e98792b9-4544-4c67-87f1-6a4c8bf68efa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound\Synth\Kick">
+      <UniqueIdentifier>{2aa67be8-cde6-4532-b772-ac0a39f8a335}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="VoiceClass.cpp">
+      <Filter>Sound\Synth\ADSR</Filter>
+    </None>
   </ItemGroup>
 </Project>
