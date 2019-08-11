@@ -7,10 +7,7 @@ class CDemoMixer
 private:
 	size_t NowSynths;
 	WAVE_FMT MixFmt;
-	CNoteManager NoteManager;
 	CEQFilter eqFilter;
-	CADSRSynthesis Synthesis[MAX_SYNTHS];
-	size_t FramesToUpdate[MAX_SYNTHS];
 
 
 public:

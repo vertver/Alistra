@@ -54,7 +54,7 @@ ProcessSoundWorker(
 	SOUNDDEVICE_INFO* pInfo
 )
 {
-#if 1
+#if 0
 	DWORD dwTemp = 0;
 	LARGE_INTEGER larg;
 	memset(&larg, 0, sizeof(LARGE_INTEGER));
@@ -84,10 +84,14 @@ ProcessSoundWorker(
 	__try
 	{
 		FramesCount = GetMusicFrames(pInfo->Fmt.SampleRate) * pInfo->Fmt.Channels;
-		BaseBuffer = VirtualAlloc(NULL, ALIGN_SIZE_64K(FramesCount * sizeof(float)), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+		BaseBuffer = (float*)VirtualAlloc(
+			NULL, 
+			ALIGN_SIZE_64K(FramesCount * sizeof(float)),
+			MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE
+		);
 		if (!BaseBuffer) return false;
 
-		//while (ProcessedFrames < FramesCount)
+		while (ProcessedFrames < FramesCount)
 		{
 			/*
 				TODO: Process function

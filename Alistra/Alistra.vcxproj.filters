@@ -47,6 +47,12 @@
     <ClCompile Include="SoftClipper.cpp">
       <Filter>Sound\Synth\Effects</Filter>
     </ClCompile>
+    <ClCompile Include="SynthManager.cpp">
+      <Filter>Sound\Mixer</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectsClass.cpp">
+      <Filter>Sound\Synth\Effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base.h" />
@@ -79,6 +85,12 @@
       <Filter>Sound\Synth\Kick</Filter>
     </ClInclude>
     <ClInclude Include="SoftClipper.h">
+      <Filter>Sound\Synth\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="SynthManager.h">
+      <Filter>Sound\Mixer</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectsClass.h">
       <Filter>Sound\Synth\Effects</Filter>
     </ClInclude>
   </ItemGroup>

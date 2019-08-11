@@ -12,6 +12,11 @@ CDemoMixer::Destroy()
 
 }
 
+/*
+	ƒоделать с нотами
+
+	 ажда€ нота должна обновл€тьс€ каждый раз, когда она начинаетс€ и заканчиваетс€
+*/
 void
 CDemoMixer::Process(float** pTemp, float** pBuffers, size_t Frames)
 {
@@ -25,32 +30,6 @@ CDemoMixer::Process(float** pTemp, float** pBuffers, size_t Frames)
 
 		pBufs[0] = pTemp[0];
 		pBufs[1] = pTemp[1];
-
-		if (FramesToUpdate[i] && FramesToUpdate[i] < Frames)
-		{
-			Synthesis[i].Process(pBufs, FramesToUpdate[i]);
-			Synthesis[i].NoteOff(i);
-
-			/*
-				Get pointer to next temp bytes
-			*/
-			pBufs[0] = &pBufs[0][FramesToUpdate[i]];
-			pBufs[1] = &pBufs[1][FramesToUpdate[i]];
-
-			NowFrames = Frames - FramesToUpdate[i];
-			FramesToUpdate[i] = 0;
-		}
-
-		/*
-			Next step for process
-		*/
-		if (!FramesToUpdate[i])
-		{
-			NoteManager.GetNextNote(i, Note, Vel, Vol, FramesToUpdate[i]);
-		}
-
-		Synthesis[i].Process(pBufs, NowFrames);
-		FramesToUpdate[i] -= NowFrames;
 
 		/*
 			Mix final data

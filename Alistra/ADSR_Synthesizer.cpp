@@ -1,5 +1,6 @@
 #include "ADSR_Synthesizer.h"
 
+/*
 f32
 CADSRSynthesis::NextSample()
 {	
@@ -57,3 +58,4 @@ CADSRSynthesis::NoteOff(i32 Voice)
 {
 	Voices.NoteOff(Voice);
 }
+*/

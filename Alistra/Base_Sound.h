@@ -53,6 +53,23 @@ AntiAliasing(f32 fTime, f32 fAdditionalPhase)
 	return 0.0f;
 }
 
+typedef struct
+{
+	DWORD StartFrame;
+	DWORD EndFrame;
+} TIME_INTERVAL;
+
+typedef struct
+{
+	BYTE Index;						// for sounds - index of audios, for devices - device index
+	BYTE IsFloat;
+	BYTE Channels;
+	BYTE Bits;						// only for sounds, device accept float values
+	DWORD Frames;					// for sounds - frames of all audio sample, for devices - buffer size in frames
+	DWORD SampleRate;
+	TIME_INTERVAL TimeInterval;		// only for sounds
+} WAVE_FMT;
+
 /*
 	2 OSC synthesizer with filter, effects and etc.
 */
@@ -111,12 +128,6 @@ typedef struct
 } AUTOMIZE;
 
 typedef struct  
-{
-	DWORD StartFrame;
-	DWORD EndFrame;
-} TIME_INTERVAL;
-
-typedef struct  
 {	
 	DWORD dwState;
 	f32 fVolumeLevel;
@@ -129,17 +140,6 @@ typedef struct
 	DWORD dwReserved;
 	NOTES_LIST NotesArray[MAX_NOTES];
 } MUSIC_INTERVAL;
-
-typedef struct  
-{
-	BYTE Index;						// for sounds - index of audios, for devices - device index
-	BYTE IsFloat;
-	BYTE Channels;
-	BYTE Bits;						// only for sounds, device accept float values
-	DWORD Frames;					// for sounds - frames of all audio sample, for devices - buffer size in frames
-	DWORD SampleRate;			
-	TIME_INTERVAL TimeInterval;		// only for sounds
-} WAVE_FMT;
 
 typedef struct  
 {
