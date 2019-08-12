@@ -8,6 +8,9 @@
 #define WHOLE_NOTES_COUNT 123.f
 #define MAX_NOTES 6
 #define MAX_AUTOMIZES 64
+#define MAX_SYNTHS 24
+#define MAX_POLY 12
+#define SYNTHBUFFER_SIZE 256
 
 /*
 	Music Beats = quarter note if 4/4. That means we can transform it
@@ -52,6 +55,60 @@ AntiAliasing(f32 fTime, f32 fAdditionalPhase)
 
 	return 0.0f;
 }
+
+inline
+void
+MixFramesToOutMix(f32* pMix, size_t MixChannels, f32* pOut, size_t OutChannels)
+{
+	if (OutChannels >= MixChannels)
+	{
+		if (MixChannels >= 2)
+		{
+			for (size_t i = 0; i < 2; i++)
+			{
+				pOut[i] = pMix[i];
+			}
+		}
+		else
+		{
+			for (size_t i = 0; i < 2; i++)
+			{
+				pOut[i] = pMix[0];
+			}
+		}
+	}
+	else
+	{
+		if (MixChannels >= 2)
+		{
+			*pOut = (pMix[0] + pMix[1]) * 0.5f;
+		}
+		else
+		{
+			*pOut = *pMix;
+		}
+	}
+}
+
+inline
+void
+CopyMixToOut(f32** pMixStuff, f32* pOutStuff, size_t ChannelsMix, size_t ChannelsOut, size_t Frames)
+{
+	for (size_t i = 0; i < Frames; i++)
+	{
+		f32 ThisBuffer[2] = { pMixStuff[0][i], pMixStuff[1][i]};
+		MixFramesToOutMix(ThisBuffer, ChannelsMix, &pOutStuff[i * ChannelsOut], ChannelsOut);
+	}
+}
+
+typedef enum
+{
+	ESTAGE_ATTACK,
+	ESTAGE_DECAY,
+	ESTAGE_SUSTAIN,
+	ESTAGE_RELEASE,
+	ESTAGE_OFF
+} ESTAGE;
 
 typedef struct
 {

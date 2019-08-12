@@ -1,4 +1,5 @@
 #include "Base_Sound.h"
+#include "DemoMixer.h"
 #include <math.h>
 
 #define ALIGN_SIZE(Size, AlSize)        ((Size + (AlSize-1)) & (~(AlSize-1)))
@@ -81,22 +82,57 @@ ProcessSoundWorker(
 	dwSampleRate = pInfo->Fmt.SampleRate;
 
 #else
+	CDemoMixer ThisDemoMixer;
+
 	__try
 	{
+		DWORD dwShit = 0;
+		hFileToPlay = CreateFileW(L"I:\\Alistra_output.raw", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, 0, nullptr);
+		if (!hFileToPlay || hFileToPlay == INVALID_HANDLE_VALUE) return false;
+
+		ThisDemoMixer.Initialize(pInfo->Fmt);
 		FramesCount = GetMusicFrames(pInfo->Fmt.SampleRate) * pInfo->Fmt.Channels;
+		DWORD dwSizeToWrite = ALIGN_SIZE_64K(FramesCount * sizeof(float));
+
 		BaseBuffer = (float*)VirtualAlloc(
 			NULL, 
-			ALIGN_SIZE_64K(FramesCount * sizeof(float)),
+			dwSizeToWrite,
 			MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE
 		);
 		if (!BaseBuffer) return false;
 
 		while (ProcessedFrames < FramesCount)
-		{
-			/*
-				TODO: Process function
-			*/
+		{	
+			size_t ProcessFrames = SYNTHBUFFER_SIZE;
+			float* pfTemp[2] = {};
+			float* pfMix[2] = {};
+			float FloatTempBuffer1[SYNTHBUFFER_SIZE] = {};
+			float FloatTempBuffer2[SYNTHBUFFER_SIZE] = {};
+			float FloatMixBuffer1[SYNTHBUFFER_SIZE] = {};
+			float FloatMixBuffer2[SYNTHBUFFER_SIZE] = {};
+			pfTemp[0] = FloatTempBuffer1;
+			pfTemp[1] = FloatTempBuffer2;
+			pfMix[0] = FloatMixBuffer1;
+			pfMix[1] = FloatMixBuffer2;
+
+			if (ProcessFrames > FramesCount - ProcessedFrames)
+			{
+				ProcessFrames = FramesCount - ProcessedFrames;
+			}
+
+			ThisDemoMixer.Process(pfTemp, pfMix, ProcessFrames);
+			CopyMixToOut(pfMix, &BaseBuffer[ProcessedFrames], 2, pInfo->Fmt.Channels, ProcessFrames);
+			
+			ProcessedFrames += ProcessFrames * 2;
 		}
+		
+		DWORD dwError = GetLastError();
+		u64 WriteSizeT = dwSizeToWrite;
+		WriteFile(hFileToPlay, BaseBuffer, WriteSizeT, &dwShit, nullptr);
+		dwError = GetLastError();
+		CloseHandle(hFileToPlay);
+
+		ThisDemoMixer.Destroy();
 	}
 	__except (EXCEPTION_EXECUTE_HANDLER)
 	{
@@ -117,7 +153,7 @@ float
 GetSoundWorkerProcess()
 {
 	float ret = (((float)ProcessedFrames) / ((float)(FramesCount)));
-	return ret > 0.95f ? 1.0f : ret;
+	return ret > 0.99f ? 1.0f : ret;
 }
 
 DWORD

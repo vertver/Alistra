@@ -9,9 +9,9 @@ CADSREnvelope::Initialize(ADSR_STRUCT* pADSRStruct, f32 SampleRate)
 	f32 R = pADSRStruct->fRelease * 0.001f * SampleRate;
 
 	SustainLevel = pADSRStruct->fSustain;
-	AttackKoef = (A <= 0.0) ? 0.0 : exp(-log((1.0 + pADSRStruct->fAttackCurve) / pADSRStruct->fAttackCurve) / A);
-	DecayKoef = (D <= 0.0) ? 0.0 : exp(-log((1.0 + pADSRStruct->fDecayReleaseCurve) / pADSRStruct->fDecayReleaseCurve) / D);
-	ReleaseKoef = (R <= 0.0) ? 0.0 : exp(-log((1.0 + pADSRStruct->fDecayReleaseCurve) / pADSRStruct->fDecayReleaseCurve) / R);
+	AttackKoef = (A <= 0.0) ? 0.0 : expf(-logf((1.0 + pADSRStruct->fAttackCurve) / pADSRStruct->fAttackCurve) / A);
+	DecayKoef = (D <= 0.0) ? 0.0 : expf(-logf((1.0 + pADSRStruct->fDecayReleaseCurve) / pADSRStruct->fDecayReleaseCurve) / D);
+	ReleaseKoef = (R <= 0.0) ? 0.0 : expf(-logf((1.0 + pADSRStruct->fDecayReleaseCurve) / pADSRStruct->fDecayReleaseCurve) / R);
 	AttackBase = (1.0 + pADSRStruct->fAttackCurve) * (1.0 - AttackKoef);
 	DecayBase = (SustainLevel - pADSRStruct->fDecayReleaseCurve) * (1.0 - DecayKoef);
 	ReleaseBase = -pADSRStruct->fDecayReleaseCurve * (1.0 - ReleaseKoef);
@@ -20,7 +20,20 @@ CADSREnvelope::Initialize(ADSR_STRUCT* pADSRStruct, f32 SampleRate)
 void
 CADSREnvelope::Reset()
 {
-	ADSRStruct.iEnvelopeStage = 0;
+	ADSRStruct.fEnvelopeLevel = 0.0;
+	ADSRStruct.iEnvelopeStage = ESTAGE_OFF;
+}
+
+void
+CADSREnvelope::BeginAttack()
+{
+	ADSRStruct.iEnvelopeStage = ESTAGE_ATTACK;
+}
+
+void
+CADSREnvelope::BeginRelease()
+{
+	ADSRStruct.iEnvelopeStage = ESTAGE_RELEASE;
 }
 
 f32
@@ -36,6 +49,7 @@ CADSREnvelope::NextEnvelope()
 			ADSRStruct.iEnvelopeStage = ESTAGE_DECAY;
 		}
 		break;
+
 	case ESTAGE_DECAY:
 		ADSRStruct.fEnvelopeLevel = ADSRStruct.fEnvelopeLevel * DecayKoef + DecayBase;
 		if (ADSRStruct.fEnvelopeLevel <= SustainLevel)
@@ -44,8 +58,10 @@ CADSREnvelope::NextEnvelope()
 			ADSRStruct.iEnvelopeStage = ESTAGE_SUSTAIN;
 		}
 		break;
+
 	case ESTAGE_SUSTAIN:
 		break;
+
 	case ESTAGE_RELEASE:
 		ADSRStruct.fEnvelopeLevel = ADSRStruct.fEnvelopeLevel* ReleaseKoef + ReleaseBase;
 		if (ADSRStruct.fEnvelopeLevel <= 0.0)
@@ -54,6 +70,7 @@ CADSREnvelope::NextEnvelope()
 			ADSRStruct.iEnvelopeStage = ESTAGE_OFF;
 		}
 		break;
+
 	default: 
 		ADSRStruct.fEnvelopeLevel = 0.0;
 		break;

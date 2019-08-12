@@ -25,7 +25,7 @@ CSoftClipper::Process(f32** pBuffers, size_t Frames)
 		float* OutCh = pBuffers[o];
 
 		for (size_t i = 0; i < Frames; i++) {
-			Temp = 0;
+			Temp = OutCh[i];
 			Temp += OutCh[i] * DriveLevel * 3.141592653f;
 			Temp = signf(Temp) * powf(fastatanf(powf(fabsf(Temp), 25.f)), (1 / 25.f));
 			OutCh[i] = (Temp * Mix) + (fabsf(Mix - 1.0f) * OutCh[i]);

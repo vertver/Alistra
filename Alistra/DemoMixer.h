@@ -1,14 +1,14 @@
 #pragma once
 #include "ADSR_Synthesizer.h"
 #include "NoteManager.h"
+#include "SoftClipper.h"
 
 class CDemoMixer
 {
 private:
-	size_t NowSynths;
 	WAVE_FMT MixFmt;
-	CEQFilter eqFilter;
-
+	CNoteManager NoteManager;
+	CSoftClipper Clipper;
 
 public:
 	void Initialize(WAVE_FMT InFmt);
