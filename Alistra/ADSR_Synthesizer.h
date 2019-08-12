@@ -109,7 +109,7 @@ public:
 			case 2:
 			{
 				EndSample = 1.0f - 2.0f * T;
-				EndSample = AntiAliasing(T, addPhase);
+				EndSample += AntiAliasing(T, addPhase);
 			}
 			break;
 			case 3:
@@ -121,22 +121,18 @@ public:
 			break;
 			case 4:
 			{
-				f32 NoiseValue = fNoiseValue;
-				NoiseValue += 19.f;
-				NoiseValue *= NoiseValue;
-				NoiseValue -= (i32)NoiseValue;
-				fNoiseValue = NoiseValue;
-				EndSample = NoiseValue - 0.5f;
+				fNoiseValue += 19.990460f;
+				fNoiseValue *= fNoiseValue;
+				fNoiseValue -= (i32)fNoiseValue;
+				EndSample = fNoiseValue - 0.5f;
 			}
 			break;
 			case 5:
 			{
-				f32 NoiseValue = fNoiseValue;
-				NoiseValue += 19.0f;
-				NoiseValue *= NoiseValue;
-				NoiseValue -= (i32)NoiseValue;
-				fNoiseValue = NoiseValue;
-				f64 RndValue = NoiseValue - 0.5f;
+				fNoiseValue += 19.0f;
+				fNoiseValue *= fNoiseValue;
+				fNoiseValue -= (i32)fNoiseValue;
+				f64 RndValue = fNoiseValue - 0.5f;
 				b0 = 0.99765f * b0 + RndValue * 0.0990460f;
 				b1 = 0.96300f * b1 + RndValue * 0.2965164f;
 				b2 = 0.57000f * b2 + RndValue * 1.0526913f;

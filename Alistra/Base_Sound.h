@@ -8,7 +8,7 @@
 #define WHOLE_NOTES_COUNT 123.f
 #define MAX_NOTES 6
 #define MAX_AUTOMIZES 64
-#define MAX_SYNTHS 24
+#define MAX_SYNTHS 6
 #define MAX_POLY 12
 #define SYNTHBUFFER_SIZE 256
 
@@ -144,6 +144,34 @@ typedef struct
 
 typedef struct
 {
+	float fRoomSize;
+	float fFeedback;
+	float fCrosstalk;
+	float fMix;
+} REVERB_STRUCT;
+
+typedef struct
+{
+	f32 fResonance;
+	f32 fFrequency;
+	size_t FilterType;
+} FILTER_STRUCT;
+
+typedef struct
+{
+	f32 fDrive;
+	f32 fMix;
+} CLIPPER_STRUCT;
+
+typedef struct
+{
+	FILTER_STRUCT FilterSettings;
+	CLIPPER_STRUCT ClipperSettings;
+	REVERB_STRUCT ReverbSettings;
+} EFFECT_STRUCT;
+
+typedef struct
+{
 	int SynthesisFirst;
 	int SynthesisSecond;
 
@@ -163,20 +191,6 @@ typedef struct
 	WAVE_FMT fmt;
 } SYNTH_STRUCT;
 
-typedef struct
-{
-	float fRoomSize;
-	float fFeedback;
-	float fCrosstalk;
-	float fMix;
-} REVERB_STRUCT;
-
-typedef struct  
-{
-	f32 fResonance;
-	f32 fFrequency;
-	size_t FilterType;
-} FILTER_STRUCT;
 
 typedef struct  
 {
@@ -239,13 +253,13 @@ public:
 class CEQFilter
 {
 private:
-	float FloatTempArray[4];
+	float FloatTempArray1[4];
+	float FloatTempArray2[4];
 	FILTER_STRUCT FilterStruct;
 	AUTOMIZE AutomizeStruct[MAX_AUTOMIZES];
 
 public:
 	void Initialize(FILTER_STRUCT* pFilterStruct);
-	void Automize(AUTOMIZE* pAutomizeStructs, size_t StructsCount);
 	void Process(float** pBuffers, size_t Frames);
 	void Reset();
 };

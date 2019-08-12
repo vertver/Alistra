@@ -3,6 +3,12 @@
 void
 CEQFilter::Initialize(FILTER_STRUCT* pFilterStruct)
 {
+	for (size_t i = 0; i < 4; i++)
+	{
+		FloatTempArray1[i] = 0.f;
+		FloatTempArray2[i] = 0.f;
+	}
+
 	memcpy(&FilterStruct, pFilterStruct, sizeof(FILTER_STRUCT));
 }
 
@@ -13,11 +19,20 @@ CEQFilter::Process(
 )
 {
 	float fTempValue = 0.f;
-	float* pTempArray = FloatTempArray;
 
 	for (size_t i = 0; i < 2; i++)
-	{
+	{	
+		float* pTempArray = nullptr;
 		float* pChannelBuffer = pBuffers[i];
+
+		if (i == 0)
+		{
+			pTempArray = FloatTempArray1;
+		}
+		else if (i == 1)
+		{
+			pTempArray = FloatTempArray2;
+		}
 
 		/*
 			Fast and simple 24db/oct frequency filter 
@@ -32,10 +47,10 @@ CEQFilter::Process(
 				float fFeedback = FilterStruct.fResonance * (1.0f + 1.0f / (1.0f - fFreq));
 
 				fTempValue = pChannelBuffer[u];
-				pTempArray[0] = fFreq * (fTempValue - pTempArray[0] + fFeedback * (pTempArray[0] - pTempArray[1]));
-				pTempArray[1] = fFreq * (pTempArray[0] - pTempArray[1]);
-				pTempArray[2] = fFreq * (pTempArray[1] - pTempArray[2]);
-				pTempArray[3] = fFreq * (pTempArray[2] - pTempArray[3]);
+				pTempArray[0] += fFreq * (fTempValue - pTempArray[0] + fFeedback * (pTempArray[0] - pTempArray[1]));
+				pTempArray[1] += fFreq * (pTempArray[0] - pTempArray[1]);
+				pTempArray[2] += fFreq * (pTempArray[1] - pTempArray[2]);
+				pTempArray[3] += fFreq * (pTempArray[2] - pTempArray[3]);
 				pChannelBuffer[u] = pTempArray[3];
 			}
 			break;
@@ -47,10 +62,10 @@ CEQFilter::Process(
 				float fFeedback = FilterStruct.fResonance * (1.0f + 1.0f / (1.0f - fFreq));
 
 				fTempValue = pChannelBuffer[u];
-				pTempArray[0] = fFreq * (fTempValue - pTempArray[0] + fFeedback * (pTempArray[0] - pTempArray[1]));
-				pTempArray[1] = fFreq * (pTempArray[0] - pTempArray[1]);
-				pTempArray[2] = fFreq * (pTempArray[1] - pTempArray[2]);
-				pTempArray[3] = fFreq * (pTempArray[2] - pTempArray[3]);
+				pTempArray[0] += fFreq * (fTempValue - pTempArray[0] + fFeedback * (pTempArray[0] - pTempArray[1]));
+				pTempArray[1] += fFreq * (pTempArray[0] - pTempArray[1]);
+				pTempArray[2] += fFreq * (pTempArray[1] - pTempArray[2]);
+				pTempArray[3] += fFreq * (pTempArray[2] - pTempArray[3]);
 				pChannelBuffer[u] = pTempArray[0] - pTempArray[3];
 			}
 			break;
@@ -62,8 +77,8 @@ CEQFilter::Process(
 				float fFeedback = FilterStruct.fResonance * (1.0f + 1.0f / (1.0f - fFreq));
 
 				fTempValue = pChannelBuffer[u];
-				pTempArray[0] = fFreq * (fTempValue - pTempArray[0] + fFeedback * (pTempArray[0] - pTempArray[1]));
-				pTempArray[1] = fFreq * (pTempArray[0] - pTempArray[1]);
+				pTempArray[0] += fFreq * (fTempValue - pTempArray[0] + fFeedback * (pTempArray[0] - pTempArray[1]));
+				pTempArray[1] += fFreq * (pTempArray[0] - pTempArray[1]);
 				pChannelBuffer[u] = fTempValue - pTempArray[0];
 			}
 			break;
@@ -76,7 +91,8 @@ CEQFilter::Reset()
 {
 	for (size_t i = 0; i < 4; i++)
 	{
-		FloatTempArray[i] = 0.f;
+		FloatTempArray1[i] = 0.f;
+		FloatTempArray2[i] = 0.f;
 	}
 
 	memset(&FilterStruct, 0, sizeof(FilterStruct));

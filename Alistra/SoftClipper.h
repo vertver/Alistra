@@ -1,12 +1,6 @@
 #pragma once
 #include "Base_Sound.h"
 
-typedef struct  
-{
-	f32 fDrive;
-	f32 fMix;
-} CLIPPER_STRUCT;
-
 class CSoftClipper
 {
 private:

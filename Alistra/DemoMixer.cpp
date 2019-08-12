@@ -1,5 +1,15 @@
 #include "DemoMixer.h"
 
+const EFFECT_STRUCT AllEffectsForSynths[MAX_SYNTHS] =
+{
+	{ { 0.5f, 0.35f, 0 }, { 0.5f, 1.0f }, {} },
+	{ { 0.6f, 0.5f, 0 }, { 0.3f, 1.0f }, {} },
+	{ { 0.4f, 0.5f, 0 }, { 0.3f, 1.0f }, {} },
+	{ {}, {}, {} },
+	{ {}, {}, {} },
+	{ {}, {}, {} }
+};
+
 void
 CDemoMixer::Initialize(WAVE_FMT InFmt)
 {
@@ -9,6 +19,11 @@ CDemoMixer::Initialize(WAVE_FMT InFmt)
 
 	NoteManager.Initialize(InFmt);
 	Clipper.Initialize(&ThisStruct);
+
+	for (size_t i = 0; i < MAX_SYNTHS; i++)
+	{
+		Effects[i].Initalize((EFFECT_STRUCT*)AllEffectsForSynths, InFmt.SampleRate);
+	}
 }
 
 void
@@ -20,15 +35,12 @@ CDemoMixer::Destroy()
 void
 CDemoMixer::Process(float** pTemp, float** pBuffers, size_t Frames)
 {
-#if 0
 	for (size_t i = 0; i < MAX_SYNTHS; i++)
-#else
-	size_t i = 0;
-#endif
 	{
 		size_t NowFrames = Frames;
 
 		NoteManager.Render(i, pTemp, Frames);
+		Effects[i].Process(pTemp, Frames);
 
 		/*
 			Mix final data
@@ -42,6 +54,6 @@ CDemoMixer::Process(float** pTemp, float** pBuffers, size_t Frames)
 		}
 	}
 
-	Clipper.Process(pBuffers, Frames);
+	//Clipper.Process(pBuffers, Frames);
 }
  

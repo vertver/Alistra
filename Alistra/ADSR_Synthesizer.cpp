@@ -5,6 +5,7 @@ CVoiceSynth::Initialize(SYNTH_STRUCT* pSynthStruct, f32 fSampleRate)
 {	
 	for (size_t i = 0; i < MAX_POLY; i++)
 	{
+		memcpy(&CurrentSynthType, pSynthStruct, sizeof(SYNTH_STRUCT));
 		adsrEnvelope[i].Initialize(&pSynthStruct->ADRSFirst, fSampleRate);
 		Oscillators[i].Initialize(pSynthStruct, fSampleRate);
 		NotesOscs[i] = 0;
@@ -44,7 +45,9 @@ CVoiceSynth::Process(f32** pBuffers, size_t Frames)
 			fOut += fSample * fADSR;
 
 			pBuffers[0][o] += fOut;
-			pBuffers[1][o] += fOut;		
+			pBuffers[1][o] += fOut;	
+			pBuffers[0][o] *= CurrentSynthType.fVolume;
+			pBuffers[1][o] *= CurrentSynthType.fVolume;
 		}
 	}
 }
