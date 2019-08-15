@@ -46,6 +46,7 @@ float* BaseBuffer = NULL;
 float fMasterVolume = 1.f;
 DWORD dwHeaderSize = 0;
 DWORD dwSampleRate = 0;
+DWORD dwSizeToWrite = 0;
 size_t BufferPosition = 0;
 size_t ProcessedFrames = 0;
 size_t FramesCount = 0;
@@ -92,7 +93,7 @@ ProcessSoundWorker(
 
 		ThisDemoMixer.Initialize(pInfo->Fmt);
 		FramesCount = GetMusicFrames(pInfo->Fmt.SampleRate) * pInfo->Fmt.Channels;
-		DWORD dwSizeToWrite = ALIGN_SIZE_64K(FramesCount * sizeof(float));
+		dwSizeToWrite = ALIGN_SIZE_64K(FramesCount * sizeof(float));
 
 		BaseBuffer = (float*)VirtualAlloc(
 			NULL, 
@@ -123,7 +124,7 @@ ProcessSoundWorker(
 			ThisDemoMixer.Process(pfTemp, pfMix, ProcessFrames);
 			CopyMixToOut(pfMix, &BaseBuffer[ProcessedFrames], 2, pInfo->Fmt.Channels, ProcessFrames);
 			
-			ProcessedFrames += ProcessFrames * 2;
+			ProcessedFrames += ProcessFrames * pInfo->Fmt.Channels;
 		}
 		
 		DWORD dwError = GetLastError();
@@ -132,7 +133,7 @@ ProcessSoundWorker(
 		dwError = GetLastError();
 		CloseHandle(hFileToPlay);
 
-		ThisDemoMixer.Destroy();
+ 		ThisDemoMixer.Destroy();
 	}
 	__except (EXCEPTION_EXECUTE_HANDLER)
 	{
@@ -223,5 +224,5 @@ IsMusicEnd()
 void
 DestroySoundWorker()
 {
-	if (BaseBuffer && FramesCount) VirtualFree(BaseBuffer, FramesCount * sizeof(float), MEM_RELEASE);
+	if (BaseBuffer && FramesCount) VirtualFree(BaseBuffer, dwSizeToWrite, MEM_RELEASE);
 }

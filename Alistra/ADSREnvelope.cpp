@@ -36,6 +36,12 @@ CADSREnvelope::BeginRelease()
 	ADSRStruct.iEnvelopeStage = ESTAGE_RELEASE;
 }
 
+i32
+CADSREnvelope::GetCurrentState()
+{
+	return ADSRStruct.iEnvelopeStage;
+}
+
 f32
 CADSREnvelope::NextEnvelope()
 {

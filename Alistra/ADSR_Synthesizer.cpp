@@ -29,25 +29,26 @@ CVoiceSynth::Process(f32** pBuffers, size_t Frames)
 {
 	for (size_t i = 0; i < MAX_POLY; i++)
 	{
-		for (size_t o = 0; o < Frames; o++)
+		if (NotesOscs[i] >= 2)
 		{
-			f32 fOut = 0.f;
-			Oscillators[i].Update();
-			f32 fSample = Oscillators[i].NextSample();
-			f32 fADSR = adsrEnvelope[i].NextEnvelope();
-
-			if (fADSR < 0.0001f)
+			for (size_t o = 0; o < Frames; o++)
 			{
-				NotesOscs[i] = 0;
-				Oscillators[i].NoteOff();
+				f32 fOut = 0.f;
+				Oscillators[i].Update();
+				f32 fSample = Oscillators[i].NextSample();
+				f32 fADSR = adsrEnvelope[i].NextEnvelope();
+
+				if (fADSR < 0.0001f && adsrEnvelope->GetCurrentState() >= ESTAGE_RELEASE)
+				{
+					NotesOscs[i] = 0;
+					Oscillators[i].NoteOff();
+				}
+
+				fOut = fSample * fADSR * CurrentSynthType.fVolume;
+
+				pBuffers[0][o] += fOut;
+				pBuffers[1][o] += fOut;
 			}
-
-			fOut += fSample * fADSR;
-
-			pBuffers[0][o] += fOut;
-			pBuffers[1][o] += fOut;	
-			pBuffers[0][o] *= CurrentSynthType.fVolume;
-			pBuffers[1][o] *= CurrentSynthType.fVolume;
 		}
 	}
 }

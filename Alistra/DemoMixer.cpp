@@ -2,12 +2,13 @@
 
 const EFFECT_STRUCT AllEffectsForSynths[MAX_SYNTHS] =
 {
-	{ { 0.5f, 0.35f, 0 }, { 0.5f, 1.0f }, {} },
-	{ { 0.6f, 0.5f, 0 }, { 0.3f, 1.0f }, {} },
-	{ { 0.4f, 0.5f, 0 }, { 0.3f, 1.0f }, {} },
-	{ {}, {}, {} },
-	{ {}, {}, {} },
-	{ {}, {}, {} }
+	{	{ 0.5f, 0.35f, 0 },		{ 0.f, 0.0f, 0 },		{ 0.0f,  1.0f	},		{ 0.3f, 0.5f, 0.2f, 0.2f }	},		// main arp
+	{	{ 0.5f, 0.35f, 0 },		{ 0.f, 0.0f, 0 },		{ 0.0f,  1.0f	},		{ 0.3f, 0.5f, 0.2f, 0.2f }	},		// second arp
+	{	{ 0.4f, 0.5f, 0 },		{ 0.5f, 0.08f, 1 },		{ 0.2f,  1.0f	},		{ 0.3f, 0.5f, 0.2f, 0.2f }	},		// noise
+	{	{ 0.6f, 0.5f, 0 },		{ 0.f, 0.f, 0 },		{ 0.25f, 1.0f	},		{}				},					// bass
+	{	{ 0.4f, 0.3f, 0 },		{ 0.f, 0.0f, 0 },		{ 0.0f,  1.0f	},		{ 0.3f, 0.5f, 0.2f, 0.2f }	},		// pad  
+	{	{ 0.4f, 0.3f, 0 },		{ 0.f, 0.0f, 0 },		{ 0.0f,  1.0f	},		{ 0.3f, 0.5f, 0.2f, 0.2f }	},		// second pad  
+	{	{}, {}, {} }
 };
 
 void
@@ -22,7 +23,7 @@ CDemoMixer::Initialize(WAVE_FMT InFmt)
 
 	for (size_t i = 0; i < MAX_SYNTHS; i++)
 	{
-		Effects[i].Initalize((EFFECT_STRUCT*)AllEffectsForSynths, InFmt.SampleRate);
+		Effects[i].Initalize((EFFECT_STRUCT*)&AllEffectsForSynths[i], InFmt.SampleRate);
 	}
 }
 

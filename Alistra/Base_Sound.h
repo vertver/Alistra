@@ -8,9 +8,10 @@
 #define WHOLE_NOTES_COUNT 123.f
 #define MAX_NOTES 6
 #define MAX_AUTOMIZES 64
-#define MAX_SYNTHS 6
-#define MAX_POLY 12
-#define SYNTHBUFFER_SIZE 256
+#define MAX_SYNTHS 8
+#define MAX_POLY 16
+#define SYNTHBUFFER_SIZE 280
+#define MAX_FRAME_SIZE SYNTHBUFFER_SIZE
 
 /*
 	Music Beats = quarter note if 4/4. That means we can transform it
@@ -132,22 +133,22 @@ typedef struct
 */
 typedef struct
 {
-	int iEnvelopeStage;
-	float fEnvelopeLevel;
-	float fAttack;
-	float fDecay;
-	float fSustain;
-	float fRelease;
-	float fAttackCurve;
-	float fDecayReleaseCurve;
+	i32 iEnvelopeStage;
+	f32 fEnvelopeLevel;
+	f32 fAttack;
+	f32 fDecay;
+	f32 fSustain;
+	f32 fRelease;
+	f32 fAttackCurve;
+	f32 fDecayReleaseCurve;
 } ADSR_STRUCT;
 
 typedef struct
 {
-	float fRoomSize;
-	float fFeedback;
-	float fCrosstalk;
-	float fMix;
+	f32 fTime;
+	f32 fLP;
+	f32 fHP;
+	f32 fMix;
 } REVERB_STRUCT;
 
 typedef struct
@@ -165,25 +166,24 @@ typedef struct
 
 typedef struct
 {
-	FILTER_STRUCT FilterSettings;
+	FILTER_STRUCT FilterSettings1;
+	FILTER_STRUCT FilterSettings2;
 	CLIPPER_STRUCT ClipperSettings;
 	REVERB_STRUCT ReverbSettings;
 } EFFECT_STRUCT;
 
 typedef struct
 {
-	int SynthesisFirst;
-	int SynthesisSecond;
+	i32 SynthesisFirst;
+	i32 SynthesisSecond;
 
-	float fVibratoFirst;
-	float fVibratoSecond;
-
-	float fSynthStyleFirst;
-	float fSynthStyleSecond;
-
-	float fMix;					// 0.5 = 50% of first and 50% of second
-	float fVolume;				// linear volume
-	float fPan;
+	f32 fVibratoFirst;
+	f32 fVibratoSecond;
+	f32 fSynthStyleFirst;
+	f32 fSynthStyleSecond;
+	f32 fMix;					// 0.5 = 50% of first and 50% of second
+	f32 fVolume;				// linear volume
+	f32 fPan;
 
 	ADSR_STRUCT ADRSFirst;
 	ADSR_STRUCT ADRSSecond;
@@ -194,7 +194,7 @@ typedef struct
 
 typedef struct  
 {
-	float fPoint;
+	f32 fPoint;
 	size_t Frame;
 } AUTOMIZE;
 
@@ -272,7 +272,6 @@ private:
 
 public:
 	void Initialize(REVERB_STRUCT* pReverbStruct, size_t SampleRate);
-	void Automize(AUTOMIZE* pAutomizeStructs, size_t StructsCount);
 	void Process(float** pBuffers, size_t Frames);
 	void Reset();
 };

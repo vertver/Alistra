@@ -8,8 +8,9 @@ class CEffectsClass
 private:
 	f32 SampleRate;
 	EFFECT_STRUCT EffectStruct;
-	CEQFilter SimpleFilter;
+	CEQFilter SimpleFilter[2];
 	CSoftClipper SimpleClipper;
+	CReverbEffect SimpleReverb;
 
 public:
 	void Initalize(EFFECT_STRUCT* pEffectStruct, f32 fSampleRate);

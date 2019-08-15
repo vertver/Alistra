@@ -20,15 +20,18 @@ CSoftClipper::Process(f32** pBuffers, size_t Frames)
 	f32 DriveLevel = ClipperStruct.fDrive;
 	f32 Mix = ClipperStruct.fMix;
 
-	for (size_t o = 0; o < 2; o++)
+	if (DriveLevel > 0.f)
 	{
-		float* OutCh = pBuffers[o];
+		for (size_t o = 0; o < 2; o++)
+		{
+			float* OutCh = pBuffers[o];
 
-		for (size_t i = 0; i < Frames; i++) {
-			Temp = OutCh[i];
-			Temp += OutCh[i] * DriveLevel * 3.141592653f;
-			Temp = signf(Temp) * powf(fastatanf(powf(fabsf(Temp), 25.f)), (1 / 25.f));
-			OutCh[i] = (Temp * Mix) + (fabsf(Mix - 1.0f) * OutCh[i]);
+			for (size_t i = 0; i < Frames; i++) {
+				Temp = OutCh[i];
+				Temp += OutCh[i] * DriveLevel * 3.141592653f;
+				Temp = signf(Temp) * powf(fastatanf(powf(fabsf(Temp), 25.f)), (1 / 25.f));
+				OutCh[i] = (Temp * Mix) + (fabsf(Mix - 1.0f) * OutCh[i]);
+			}
 		}
 	}
 }
