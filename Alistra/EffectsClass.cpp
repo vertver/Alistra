@@ -15,7 +15,10 @@ CEffectsClass::Initalize(EFFECT_STRUCT* pEffectStruct, f32 fSampleRate)
 void
 CEffectsClass::Destroy()
 {
-
+	SimpleClipper.Reset();
+	SimpleFilter[0].Reset();
+	SimpleFilter[1].Reset();
+	SimpleReverb.Reset();
 }
 
 void

@@ -56,6 +56,9 @@
     <ClCompile Include="RiffEncoder.cpp">
       <Filter>Sound\Base</Filter>
     </ClCompile>
+    <ClCompile Include="ChannelPanner.cpp">
+      <Filter>Sound\Synth\Effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base.h" />
@@ -98,6 +101,9 @@
     </ClInclude>
     <ClInclude Include="RIFFEncoder.h">
       <Filter>Sound\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="ChannelPanner.h">
+      <Filter>Sound\Synth\Effects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

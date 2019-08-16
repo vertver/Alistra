@@ -44,7 +44,7 @@ CVoiceSynth::Process(f32** pBuffers, size_t Frames)
 					Oscillators[i].NoteOff();
 				}
 
-				fOut = fSample * fADSR * CurrentSynthType.fVolume;
+				fOut = fSample * fADSR;
 
 				pBuffers[0][o] += fOut;
 				pBuffers[1][o] += fOut;

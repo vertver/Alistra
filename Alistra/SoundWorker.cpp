@@ -78,7 +78,10 @@ ProcessSoundWorker(
  		if (IsSoundExported())
 		{
 			wchar_t szPathToFile[MAX_PATH] = {};
+			WAVE_FMT fmtTemp = {};
+
 			GetExportPath(szPathToFile);
+			memcpy(&fmtTemp, &pInfo->Fmt, sizeof(WAVE_FMT));
 
 			if (!fileEncoder.Initialize(szPathToFile, pInfo->Fmt))
 			{
@@ -102,6 +105,11 @@ ProcessSoundWorker(
 
 		while (ProcessedFrames < FramesCount)
 		{	
+			memset(FloatTempBuffer1, 0, sizeof(FloatTempBuffer1));
+			memset(FloatTempBuffer2, 0, sizeof(FloatTempBuffer2));
+			memset(FloatMixBuffer1, 0, sizeof(FloatMixBuffer1));
+			memset(FloatMixBuffer2, 0, sizeof(FloatMixBuffer2));
+
 			if (ProcessFrames > FramesCount - ProcessedFrames)
 			{
 				ProcessFrames = FramesCount - ProcessedFrames;

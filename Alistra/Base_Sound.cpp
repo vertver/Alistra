@@ -111,7 +111,7 @@ IsSoundExported()
 void
 GetExportPath(wchar_t* pOutpath)
 {
-	wcscat_s(pOutpath, MAX_PATH, L"G:\\Alistra\\Alistra\\Alistra_output.wav");
+	wcscat_s(pOutpath, MAX_PATH, L"G:\\Alistra\\Alistra\\Alistra_output.raw");
 }
 
 bool

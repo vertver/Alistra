@@ -145,9 +145,10 @@ typedef struct
 
 typedef struct
 {
+	f32 fMaxRoomsize;
+	f32 fRoomSize;
 	f32 fTime;
-	f32 fLP;
-	f32 fHP;
+	f32 fDamping;
 	f32 fMix;
 } REVERB_STRUCT;
 
@@ -182,8 +183,6 @@ typedef struct
 	f32 fSynthStyleFirst;
 	f32 fSynthStyleSecond;
 	f32 fMix;					// 0.5 = 50% of first and 50% of second
-	f32 fVolume;				// linear volume
-	f32 fPan;
 
 	ADSR_STRUCT ADRSFirst;
 	ADSR_STRUCT ADRSSecond;
@@ -271,10 +270,12 @@ public:
 class CReverbEffect
 {
 private:
+	f32 fSampleRate;
 	REVERB_STRUCT ReverbStruct;
 	AUTOMIZE AutomizeStruct[MAX_AUTOMIZES];
 
 public:
+	CReverbEffect() {}
 	void Initialize(REVERB_STRUCT* pReverbStruct, size_t SampleRate);
 	void Process(float** pBuffers, size_t Frames);
 	void Reset();
