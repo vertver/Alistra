@@ -1,39 +1,35 @@
-//--------------------------------------------------------------------------------------
-// Constant Buffer Variables
-//--------------------------------------------------------------------------------------
-cbuffer ConstantBuffer : register( b0 )
-{
-    matrix World;
-    matrix View;
-    matrix Projection;
-}
+Texture2D Destination : register(t0);
 
-//--------------------------------------------------------------------------------------
-struct VS_OUTPUT
+SamplerState MeshTextureSampler
 {
-    float4 Pos : SV_POSITION;
-    float4 Color : COLOR0;
+    Filter = MIN_MAG_MIP_LINEAR;
+    AddressU = Wrap;
+    AddressV = Wrap;
 };
 
 //--------------------------------------------------------------------------------------
-// Vertex Shader
-//--------------------------------------------------------------------------------------
-VS_OUTPUT VS( float4 Pos : POSITION, float4 Color : COLOR )
-{
-    VS_OUTPUT output = (VS_OUTPUT)0;
-    //float4 pos = float4(Pos, 1.0);
-    output.Pos = mul( Pos, World );
-    output.Pos = mul( output.Pos, View );
-    output.Pos = mul( output.Pos, Projection );
-	output.Color=Color;
+struct VS_QUARD_INPUT {
+    uint VertexID: 		SV_VertexID;
+};
+
+struct PS_QUARD_INPUT {
+    float4 Pos: 		SV_POSITION;
+    float2 texCoord: 	TEXCOORD;
+};
+
+
+PS_QUARD_INPUT VS(VS_QUARD_INPUT input) {
+    PS_QUARD_INPUT output;
+    uint id = input.VertexID;
+    float x = -1, y = -1;
+    x = (id == 2) ? 3.0 : -1.0;
+    y = (id == 1) ? 3.0 : -1.0;
+    output.Pos = float4(x, y, 1.0, 1.0);
+    output.texCoord = output.Pos.xy * 0.5 + 0.5;
+    output.texCoord.y = 1.0 - output.texCoord.y;
     return output;
 }
 
-
-//--------------------------------------------------------------------------------------
-// Pixel Shader
-//--------------------------------------------------------------------------------------
-float4 PS( VS_OUTPUT input ) : SV_Target
-{
-    return input.Color;
+float4 PS(PS_QUARD_INPUT input) : SV_Target {
+    return Destination.Sample(MeshTextureSampler, input.texCoord);
 }

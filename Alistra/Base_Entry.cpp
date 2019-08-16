@@ -3,6 +3,7 @@
 #include "Base_Window.h"
 #include "Base_Render.h"
 #include <stdio.h>
+#include <cassert>
 
 int
 RealEntryPoint(
@@ -69,7 +70,8 @@ RealEntryPoint(
 	/*
 		Init all stuff
 	*/
-	InitRender(isImgui);
+    const bool render = InitRender(isImgui);
+    assert(render);
 	SetInitedEvent();
 
 	if (!bAudio)

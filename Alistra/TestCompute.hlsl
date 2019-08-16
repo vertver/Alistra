@@ -1,114 +1,125 @@
 #pragma kernel CSMain
+RWTexture2D<float4> Destination : register(u0);
 
-RWTexture2D<float> sNoiseTex : register(u0);
-
-//Input 
-float lacunarity = 2.0f;
-float scale = 2.0f;
-float gain = 0.5f;
-int octaves = 7;
-//
-
-//
-// Noise Shader Library for Unity - https://github.com/keijiro/NoiseShader
-//
-// Original work (webgl-noise) Copyright (C) 2011 Ashima Arts.
-// Translation and modification was made by Keijiro Takahashi.
-//
-// This shader is based on the webgl-noise GLSL shader. For further details
-// of the original shader, please see the following description from the
-// original source code.
-//
-
-//
-// Description : Array and textureless GLSL 2D simplex noise function.
-//      Author : Ian McEwan, Ashima Arts.
-//  Maintainer : ijm
-//     Lastmod : 20110822 (ijm)
-//     License : Copyright (C) 2011 Ashima Arts. All rights reserved.
-//               Distributed under the MIT License. See LICENSE file.
-//               https://github.com/ashima/webgl-noise
-//
-
-float3 mod289(float3 x)
+cbuffer ConstantBuffer : register(b0)
 {
-    return x - floor(x / 289.0) * 289.0;
+    matrix World;
+    matrix WorldInverse;
+    float3 lightDirection;
+};
+
+cbuffer InputBuffer : register(b1)
+{
+    float  power;
+    float  darkness;
+    float  blackAndWhite;
+    float3 colorAMix;
+    float3 colorBMix;
+};
+
+static const float epsilon = 0.001f;
+static const float maxDistance = 250;
+static const int maxStepCount = 300;
+
+struct Ray {
+    float3 origin;
+    float3 direction;
+};
+
+Ray CreateRay(float3 origin, float3 direction)
+{
+    Ray ray;
+    ray.origin = origin;
+    ray.direction = direction;
+    return ray;
 }
 
-float2 mod289(float2 x)
+Ray CreateCameraRay(float2 uv)
 {
-    return x - floor(x / 289.0) * 289.0;
+    float3 origin = mul(World, float4(0.0f, 0.0f, 0.0f, 1.0f)).xyz;
+    float3 direction = mul(WorldInverse, float4(uv, 0.0f, 1.0f)).xyz;
+    direction = mul(World, float4(direction, 0.0f)).xyz;
+    direction = normalize(direction);
+    return CreateRay(origin, direction);
 }
 
-float3 permute(float3 x)
-{
-    return mod289((x * 34.0 + 1.0) * x);
+//http://blog.hvidtfeldts.net/index.php/2011/09/distance-estimated-3d-fractals-v-the-mandelbulb-different-de-approximations/
+float2 SceneInfo(float3 position) {
+    float3 z = position;
+    float dr = 1.0;
+    float r = 0.0;
+    int iterations = 0;
+
+    for (int i = 0; i < 15; i++) {
+        iterations = i;
+        r = length(z);
+
+        if (r > 2) {
+            break;
+        }
+
+        // convert to polar coordinates
+        float theta = acos(z.z / r);
+        float phi = atan2(z.y, z.x);
+        dr = pow(r, power - 1.0)*power*dr + 1.0;
+
+        // scale and rotate the point
+        float zr = pow(r, power);
+        theta = theta * power;
+        phi = phi * power;
+
+        // convert back to cartesian coordinates
+        z = zr * float3(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
+        z += position;
+    }
+    float dst = 0.5*log(r)*r / dr;
+    return float2(iterations, dst * 1);
 }
 
-float3 taylorInvSqrt(float3 r)
-{
-    return 1.79284291400159 - 0.85373472095314 * r;
+float3 EstimateNormal(float3 p) {
+    float x = SceneInfo(float3(p.x + epsilon, p.y, p.z)).y - SceneInfo(float3(p.x - epsilon, p.y, p.z)).y;
+    float y = SceneInfo(float3(p.x, p.y + epsilon, p.z)).y - SceneInfo(float3(p.x, p.y - epsilon, p.z)).y;
+    float z = SceneInfo(float3(p.x, p.y, p.z + epsilon)).y - SceneInfo(float3(p.x, p.y, p.z - epsilon)).y;
+    return normalize(float3(x, y, z));
 }
-
-float snoise(float2 v)
-{
-    const float4 C = float4(0.211324865405187,  // (3.0-sqrt(3.0))/6.0
-        0.366025403784439,  // 0.5*(sqrt(3.0)-1.0)
-        -0.577350269189626,  // -1.0 + 2.0 * C.x
-        0.024390243902439); // 1.0 / 41.0
-// First corner
-    float2 i = floor(v + dot(v, C.yy));
-    float2 x0 = v - i + dot(i, C.xx);
-
-    // Other corners
-    float2 i1;
-    i1.x = step(x0.y, x0.x);
-    i1.y = 1.0 - i1.x;
-
-    // x1 = x0 - i1  + 1.0 * C.xx;
-    // x2 = x0 - 1.0 + 2.0 * C.xx;
-    float2 x1 = x0 + C.xx - i1;
-    float2 x2 = x0 + C.zz;
-
-    // Permutations
-    i = mod289(i); // Avoid truncation effects in permutation
-    float3 p =
-        permute(permute(i.y + float3(0.0, i1.y, 1.0))
-            + i.x + float3(0.0, i1.x, 1.0));
-
-    float3 m = max(0.5 - float3(dot(x0, x0), dot(x1, x1), dot(x2, x2)), 0.0);
-    m = m * m;
-    m = m * m;
-
-    // Gradients: 41 points uniformly over a line, mapped onto a diamond.
-    // The ring size 17*17 = 289 is close to a multiple of 41 (41*7 = 287)
-    float3 x = 2.0 * frac(p * C.www) - 1.0;
-    float3 h = abs(x) - 0.5;
-    float3 ox = floor(x + 0.5);
-    float3 a0 = x - ox;
-
-    // Normalise gradients implicitly by scaling m
-    m *= taylorInvSqrt(a0 * a0 + h * h);
-
-    // Compute final noise value at P
-    float3 g;
-    g.x = a0.x * x0.x + h.x * x0.y;
-    g.y = a0.y * x1.x + h.y * x1.y;
-    g.z = a0.z * x2.x + h.z * x2.y;
-    return 130.0 * dot(m, g);
-}
-
 
 [numthreads(1, 1, 1)]
 void CSMain(uint3 id : SV_DispatchThreadID)
 {
-    float amplitude = 0.5f;
-    float frequency = 1.0f;
+    uint width;
+    uint height;
+    Destination.GetDimensions(width, height);
 
-    for (int i = 0; i < octaves; ++i)
+    float2 uv = id.xy / float2(width, height);
+
+    Ray ray = CreateCameraRay(uv * 2.0f - 1.0f); 
+    float rayDistance = 0.0f;
+    int marchSteps = 0;
+
+    float4 result = lerp(float4(51, 3, 20, 1), float4(16, 6, 28, 1), uv.y) / 255.0;
+
+    while (rayDistance < maxDistance && marchSteps < maxStepCount)
     {
-        sNoiseTex[id.xy] += amplitude * snoise(frequency * float2(id.x, id.y));
-        frequency *= lacunarity;
-        amplitude *= gain;
+        marchSteps++;
+        float2 sceneInfo = SceneInfo(ray.origin);
+        float distance = sceneInfo.y;
+
+        if (distance <= epsilon)
+        {
+            float iterations = sceneInfo.x;
+            float3 normal = EstimateNormal(ray.origin - ray.direction * epsilon * 2.0f);
+
+            float colorA = saturate(dot(normal*.5 + .5, -lightDirection));
+            float colorB = saturate(iterations / 16.0);
+            float3 colorMix = saturate(colorA * colorAMix + colorB * colorBMix);
+
+            result = float4(colorMix, 1.0f);
+            break;
+        }
+        ray.origin += ray.direction * distance;
+        rayDistance += distance;
     }
+
+    float rim = marchSteps / darkness;
+    Destination[id.xy] = lerp(result, 1.0f, blackAndWhite) * rim;
 }
