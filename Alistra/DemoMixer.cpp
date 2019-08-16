@@ -8,7 +8,7 @@ const EFFECT_STRUCT AllEffectsForSynths[MAX_SYNTHS] =
 	{	{ 0.6f, 0.5f, 0 },		{ 0.f, 0.f, 0 },		{ 0.25f, 1.0f	},		{}				},					// bass
 	{	{ 0.4f, 0.3f, 0 },		{ 0.f, 0.0f, 0 },		{ 0.0f,  1.0f	},		{ 0.3f, 0.5f, 0.2f, 0.2f }	},		// pad  
 	{	{ 0.4f, 0.3f, 0 },		{ 0.f, 0.0f, 0 },		{ 0.0f,  1.0f	},		{ 0.3f, 0.5f, 0.2f, 0.2f }	},		// second pad  
-	{	{}, {}, {} }
+	{	{ 0.4f, 0.5f, 0 },		{},						{ 0.15f, 1.0f	},		{} }								// kick
 };
 
 void

@@ -1,4 +1,5 @@
 #include "NoteManager.h"
+#include "Base_Window.h"
 
 const SYNTH_STRUCT SynthGlobalStruct[MAX_SYNTHS] = 
 {
@@ -27,13 +28,13 @@ const SYNTH_STRUCT SynthGlobalStruct[MAX_SYNTHS] =
 		{}
 	},
 	{
-		2, 0, 0.f, 0.f, 0.f, 0.f, 1.0f, 0.05f, 0.5f,
+		2, 0, 0.f, 0.f, 0.f, 0.f, 1.0f, 0.15f, 0.5f,
 		{ ESTAGE_OFF, 0.f, 1200.f, 600.f, 1.0f, 880.f, 0.3f, 0.0001f },
 		{},
 		{}
 	},
 	{
-		2, 0, 0.f, 0.f, 0.f, 0.f, 1.0f, 0.05f, 0.5f,
+		2, 0, 0.f, 0.f, 0.f, 0.f, 1.0f, 0.15f, 0.5f,
 		{ ESTAGE_OFF, 0.f, 4000.f, 600.f, 1.0f, 880.f, 0.3f, 0.0001f },
 		{},
 		{}
@@ -1284,6 +1285,8 @@ CNoteManager::Initialize(WAVE_FMT WaveFormat)
 			pEffects[i] = new CEffectsClass;
 			midiParser[i] = new MidiRender;
 			midiParser[i]->Synthsave.Initialize((SYNTH_STRUCT*)&SynthGlobalStruct[i], WaveFormat.SampleRate);
+			if (!GetMainWindowHandle()) break;
+
 			midiParser[i]->Render(2, WaveFormat.SampleRate, rawData, rawDataSize);
 			pSynthBuffers[i][0] = midiParser[i]->Data[0];
 			pSynthBuffers[i][1] = midiParser[i]->Data[1];

@@ -1,16 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="Base_Camera.c">
-      <Filter>Render and window</Filter>
-    </ClCompile>
     <ClCompile Include="Base_Entry.cpp" />
     <ClCompile Include="Base_System.cpp" />
     <ClCompile Include="Base_Thread.cpp" />
     <ClCompile Include="entry_point.cpp" />
-    <ClCompile Include="Base_D3D11.cpp">
-      <Filter>Render and window</Filter>
-    </ClCompile>
     <ClCompile Include="ADSR_Synthesizer.cpp">
       <Filter>Sound\Synth\ADSR</Filter>
     </ClCompile>
@@ -22,9 +16,6 @@
     </ClCompile>
     <ClCompile Include="LPFilter.cpp">
       <Filter>Sound\Synth\Effects</Filter>
-    </ClCompile>
-    <ClCompile Include="Base_Window.cpp">
-      <Filter>Render and window</Filter>
     </ClCompile>
     <ClCompile Include="FadeOut.cpp">
       <Filter>Sound\Synth\Effects</Filter>
@@ -38,12 +29,6 @@
     <ClCompile Include="DemoMixer.cpp">
       <Filter>Sound\Mixer</Filter>
     </ClCompile>
-    <ClCompile Include="Base_Sound.cpp">
-      <Filter>Sound</Filter>
-    </ClCompile>
-    <ClCompile Include="KickGenerator.cpp">
-      <Filter>Sound\Synth\Kick</Filter>
-    </ClCompile>
     <ClCompile Include="SoftClipper.cpp">
       <Filter>Sound\Synth\Effects</Filter>
     </ClCompile>
@@ -53,19 +38,34 @@
     <ClCompile Include="EffectsClass.cpp">
       <Filter>Sound\Synth\Effects</Filter>
     </ClCompile>
+    <ClCompile Include="Base_Camera.c">
+      <Filter>Render and window\Demo Window</Filter>
+    </ClCompile>
+    <ClCompile Include="Base_D3D11.cpp">
+      <Filter>Render and window\Demo Window</Filter>
+    </ClCompile>
+    <ClCompile Include="Base_Window.cpp">
+      <Filter>Render and window\Demo Window</Filter>
+    </ClCompile>
+    <ClCompile Include="DemoWindow.cpp">
+      <Filter>Render and window\Controls Window</Filter>
+    </ClCompile>
+    <ClCompile Include="Base_Sound.cpp">
+      <Filter>Sound\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="RiffEncoder.cpp">
+      <Filter>Sound\Base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base.h" />
     <ClInclude Include="Base_Render.h">
-      <Filter>Render and window\headers</Filter>
+      <Filter>Render and window\Demo Window\headers</Filter>
     </ClInclude>
     <ClInclude Include="Base_Window.h">
-      <Filter>Render and window\headers</Filter>
+      <Filter>Render and window\Demo Window\headers</Filter>
     </ClInclude>
     <ClInclude Include="Base_Thread.h" />
-    <ClInclude Include="Base_Camera.h">
-      <Filter>Render and window</Filter>
-    </ClInclude>
     <ClInclude Include="ADSR_Synthesizer.h">
       <Filter>Sound\Synth\ADSR</Filter>
     </ClInclude>
@@ -78,12 +78,6 @@
     <ClInclude Include="DemoMixer.h">
       <Filter>Sound\Mixer</Filter>
     </ClInclude>
-    <ClInclude Include="Base_Sound.h">
-      <Filter>Sound</Filter>
-    </ClInclude>
-    <ClInclude Include="KickGenerator.h">
-      <Filter>Sound\Synth\Kick</Filter>
-    </ClInclude>
     <ClInclude Include="SoftClipper.h">
       <Filter>Sound\Synth\Effects</Filter>
     </ClInclude>
@@ -93,13 +87,22 @@
     <ClInclude Include="EffectsClass.h">
       <Filter>Sound\Synth\Effects</Filter>
     </ClInclude>
+    <ClInclude Include="Base_Camera.h">
+      <Filter>Render and window\Demo Window</Filter>
+    </ClInclude>
+    <ClInclude Include="DemoSettings.h">
+      <Filter>Render and window\Controls Window</Filter>
+    </ClInclude>
+    <ClInclude Include="Base_Sound.h">
+      <Filter>Sound\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="RIFFEncoder.h">
+      <Filter>Sound\Base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Render and window">
       <UniqueIdentifier>{d56bc483-fc07-4651-a3bb-23f08c6f3c48}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Render and window\headers">
-      <UniqueIdentifier>{2a3bd46c-4749-42f3-824c-ecbae5854307}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sound">
       <UniqueIdentifier>{98deccbb-011c-469c-a479-59a857aa1943}</UniqueIdentifier>
@@ -125,8 +128,17 @@
     <Filter Include="Sound\Mixer\Sound worker">
       <UniqueIdentifier>{e98792b9-4544-4c67-87f1-6a4c8bf68efa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Sound\Synth\Kick">
-      <UniqueIdentifier>{2aa67be8-cde6-4532-b772-ac0a39f8a335}</UniqueIdentifier>
+    <Filter Include="Render and window\Demo Window">
+      <UniqueIdentifier>{61326e7c-4468-4c7d-800f-9de8829cfdc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render and window\Demo Window\headers">
+      <UniqueIdentifier>{2a3bd46c-4749-42f3-824c-ecbae5854307}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render and window\Controls Window">
+      <UniqueIdentifier>{0ca12741-7fce-4fb3-91f6-7001144c5dd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound\Base">
+      <UniqueIdentifier>{ac33f018-a76a-4a29-a07c-8caac791b865}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

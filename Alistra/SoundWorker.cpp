@@ -1,5 +1,7 @@
 #include "Base_Sound.h"
+#include "Base_Window.h"
 #include "DemoMixer.h"
+#include "RIFFEncoder.h"
 #include <math.h>
 
 #define ALIGN_SIZE(Size, AlSize)        ((Size + (AlSize-1)) & (~(AlSize-1)))
@@ -55,94 +57,86 @@ bool
 ProcessSoundWorker(
 	SOUNDDEVICE_INFO* pInfo
 )
-{
-#if 0
-	DWORD dwTemp = 0;
-	LARGE_INTEGER larg;
-	memset(&larg, 0, sizeof(LARGE_INTEGER));
+{	
+	CRiffEncoder fileEncoder;
+	CDemoMixer ThisDemoMixer;	
+	size_t ProcessFrames = SYNTHBUFFER_SIZE;
+	float* pfTemp[2] = {};
+	float* pfMix[2] = {};
+	float FloatTempBuffer1[SYNTHBUFFER_SIZE] = {};
+	float FloatTempBuffer2[SYNTHBUFFER_SIZE] = {};
+	float FloatMixBuffer1[SYNTHBUFFER_SIZE] = {};
+	float FloatMixBuffer2[SYNTHBUFFER_SIZE] = {};
 
-	hFileToPlay = CreateFileW(L"I:\\Test_Alistra.raw", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
-	if (!hFileToPlay || hFileToPlay == INVALID_HANDLE_VALUE) return false;
-
-	GetFileSizeEx(hFileToPlay, &larg);
-	if (larg.QuadPart < 8)
-	{
-		CloseHandle(hFileToPlay);
-		hFileToPlay = NULL;
-		return false;
-	}
-
-	BaseBuffer = (float*)HeapAlloc(GetProcessHeap(), 0, (size_t)larg.QuadPart);
-	ReadFile(hFileToPlay, BaseBuffer, (DWORD)larg.QuadPart, &dwTemp, 0);
-
-	FramesCount = (size_t)(larg.QuadPart / sizeof(float));
-
-	CloseHandle(hFileToPlay);	
-	hFileToPlay = NULL;
-
-	dwSampleRate = pInfo->Fmt.SampleRate;
-
-#else
-	CDemoMixer ThisDemoMixer;
+	pfTemp[0] = FloatTempBuffer1;
+	pfTemp[1] = FloatTempBuffer2;
+	pfMix[0] = FloatMixBuffer1;
+	pfMix[1] = FloatMixBuffer2;
 
 	__try
 	{
-		DWORD dwShit = 0;
-		hFileToPlay = CreateFileW(L"I:\\Alistra_output.raw", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, 0, nullptr);
-		if (!hFileToPlay || hFileToPlay == INVALID_HANDLE_VALUE) return false;
+ 		if (IsSoundExported())
+		{
+			wchar_t szPathToFile[MAX_PATH] = {};
+			GetExportPath(szPathToFile);
 
-		ThisDemoMixer.Initialize(pInfo->Fmt);
+			if (!fileEncoder.Initialize(szPathToFile, pInfo->Fmt))
+			{
+				return false;
+			}
+		}
+
+		ThisDemoMixer.Initialize(pInfo->Fmt);		
+
+		/*
+			Allocate main buffer with align
+		*/
 		FramesCount = GetMusicFrames(pInfo->Fmt.SampleRate) * pInfo->Fmt.Channels;
 		dwSizeToWrite = ALIGN_SIZE_64K(FramesCount * sizeof(float));
-
-		BaseBuffer = (float*)VirtualAlloc(
-			NULL, 
-			dwSizeToWrite,
-			MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE
-		);
-		if (!BaseBuffer) return false;
+		BaseBuffer = (float*)VirtualAlloc(NULL, dwSizeToWrite, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+		if (!BaseBuffer)
+		{
+			fileEncoder.Destroy();
+			return false;
+		}
 
 		while (ProcessedFrames < FramesCount)
 		{	
-			size_t ProcessFrames = SYNTHBUFFER_SIZE;
-			float* pfTemp[2] = {};
-			float* pfMix[2] = {};
-			float FloatTempBuffer1[SYNTHBUFFER_SIZE] = {};
-			float FloatTempBuffer2[SYNTHBUFFER_SIZE] = {};
-			float FloatMixBuffer1[SYNTHBUFFER_SIZE] = {};
-			float FloatMixBuffer2[SYNTHBUFFER_SIZE] = {};
-			pfTemp[0] = FloatTempBuffer1;
-			pfTemp[1] = FloatTempBuffer2;
-			pfMix[0] = FloatMixBuffer1;
-			pfMix[1] = FloatMixBuffer2;
-
 			if (ProcessFrames > FramesCount - ProcessedFrames)
 			{
 				ProcessFrames = FramesCount - ProcessedFrames;
 			}
 
+			/*
+				Check for main window instance
+			*/
+			if (!GetMainWindowHandle()) break;
+
+			/*
+				Process data by mixer and put to main buffer
+			*/
 			ThisDemoMixer.Process(pfTemp, pfMix, ProcessFrames);
 			CopyMixToOut(pfMix, &BaseBuffer[ProcessedFrames], 2, pInfo->Fmt.Channels, ProcessFrames);
 			
 			ProcessedFrames += ProcessFrames * pInfo->Fmt.Channels;
 		}
-		
-		DWORD dwError = GetLastError();
-		u64 WriteSizeT = dwSizeToWrite;
-		WriteFile(hFileToPlay, BaseBuffer, WriteSizeT, &dwShit, nullptr);
-		dwError = GetLastError();
-		CloseHandle(hFileToPlay);
 
- 		ThisDemoMixer.Destroy();
+		if (IsSoundExported())
+		{
+			fileEncoder.Write(BaseBuffer, FramesCount * sizeof(float));
+		}
+
+ 		ThisDemoMixer.Destroy(); 
+		fileEncoder.Destroy();
 	}
 	__except (EXCEPTION_EXECUTE_HANDLER)
 	{
 		/*
 			We can't process our data, so we quit from thread
 		*/
+		fileEncoder.Destroy();
 		return false;
 	}
-#endif	
 
 	waveFormat.wFormatTag = (pInfo->Fmt.IsFloat ? 3 : 1);
 	waveFormat.wBitsPerSample = pInfo->Fmt.Bits;

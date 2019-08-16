@@ -230,6 +230,10 @@ bool EnumerateOutputDevices(SOUNDDEVICE_INFO*** pSoundInfos, size_t* DevicesCoun
 
 bool IsPlayingStarted();
 
+void SetSoundExport();
+bool IsSoundExported();
+void GetExportPath(wchar_t* pOutpath);
+
 /*
 	Sound size in frames
 */

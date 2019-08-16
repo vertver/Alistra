@@ -85,7 +85,11 @@ bool CompileShaderFromFile(_In_ LPCWSTR srcFile, _In_ LPCSTR entryPoint, _In_ LP
     void *data = 0;
     const bool loaded = LoadFile(srcFile, &data,&SrcDataSize);
 
-    if (!loaded) return false;
+	if (!loaded)
+	{
+		MessageBoxW(nullptr, L"Can't load shader file", L"≈√√Œ√", MB_OK | MB_ICONERROR);
+		return false;
+	}
 
     const HRESULT hr = D3DCompile(data, SrcDataSize, nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
             entryPoint, shaderModel, flags, 0, &shaderBlob, &errorBlob);
@@ -114,10 +118,14 @@ bool InitVertexShader()
     ID3DBlob* vsBlob = nullptr;
     const bool hr = CompileShaderFromFile(g_ShaderFile, "VS", "vs_5_0", &vsBlob);
 
-    if (!hr) return false;
+	if (!hr)
+	{
+		return false;
+	}
 
     if (FAILED(pDevice->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &pVertexShader)))
     {
+		MessageBoxW(nullptr, L"Can't compile vertex shader", L"≈√√Œ√", MB_OK | MB_ICONERROR);
         _RELEASE(vsBlob);
         return false;
     }

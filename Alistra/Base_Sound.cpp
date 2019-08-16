@@ -39,6 +39,7 @@ typedef HANDLE	(WINAPI *FAvSetMmThreadCharacteristics)		(LPCSTR, LPDWORD);
 typedef BOOL	(WINAPI *FAvRevertMmThreadCharacteristics)	(HANDLE);
 typedef BOOL	(WINAPI *FAvSetMmThreadPriority)			(HANDLE, AVRT_PRIORITY);
 
+bool isSoundExported;
 HMODULE hDInputDLL = 0;
 HANDLE hMMCSS = NULL;
 HANDLE hWasapiCloseEvent = NULL;
@@ -93,6 +94,24 @@ GetSleepTime(
 	fRet = ((((float)Frames / (float)SampleRate) * 1000) / 2);
 
 	return (DWORD)fRet;
+}
+
+void 
+SetSoundExport()
+{
+	isSoundExported = true;
+}
+
+bool
+IsSoundExported()
+{
+	return isSoundExported;
+}
+
+void
+GetExportPath(wchar_t* pOutpath)
+{
+	wcscat_s(pOutpath, MAX_PATH, L"G:\\Alistra\\Alistra\\Alistra_output.wav");
 }
 
 bool
@@ -328,24 +347,21 @@ InitSound(
 			}
 			else
 			{
-				MessageBoxW(NULL, L"Something goings wrong with your wide char strings in output sound device.", L"Ð•Ð“Ð“ÐžÐ“", MB_OK | MB_ICONHAND);
+				MessageBoxA(NULL, "Something goings wrong with your wide char strings in sound device.", "ÅÃÃÎÃ“", MB_OK | MB_ICONHAND);
 				return false;
 			}
 		}
 
 		if (!InitedDevices.pOutputDevice)
 		{
-			if (SUCCEEDED(deviceEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pEndPoints)))
+			/*
+				if all methods failed - set default device
+			*/
+			if (FAILED(deviceEnumerator->GetDefaultAudioEndpoint(eRender, eMultimedia, &InitedDevices.pOutputDevice)))
 			{
-				/*
-					if all methods failed - set default device
-				*/
-				if (FAILED(deviceEnumerator->GetDefaultAudioEndpoint(eRender, eMultimedia, &InitedDevices.pOutputDevice)))
-				{
-					_RELEASE(deviceEnumerator);
-					_RELEASE(pEndPoints);
-					return false;
-				}
+				_RELEASE(deviceEnumerator);
+				_RELEASE(pEndPoints);
+				return false;
 			}
 		}
 
@@ -361,24 +377,21 @@ InitSound(
 			}
 			else
 			{
-				MessageBoxW(NULL, L"Something goings wrong with your wide char strings in input sound device.", L"Ð•Ð“Ð“ÐžÐ“", MB_OK | MB_ICONHAND);
+				MessageBoxA(NULL, "Something goings wrong with your wide char strings in sound device.", "ÅÃÃÎÃ“", MB_OK | MB_ICONHAND);
 				return false;
 			}
 		}
 
 		if (!InitedDevices.pInputDevice)
 		{
-			if (SUCCEEDED(deviceEnumerator->EnumAudioEndpoints(eCapture, DEVICE_STATE_ACTIVE, &pEndPoints)))
+			/*
+				if all methods failed - set default device
+			*/
+			if (FAILED(deviceEnumerator->GetDefaultAudioEndpoint(eCapture, eConsole, &InitedDevices.pInputDevice)))
 			{
-				/*
-					if all methods failed - set default device
-				*/
-				if (FAILED(deviceEnumerator->GetDefaultAudioEndpoint(eCapture, eConsole, &InitedDevices.pInputDevice)))
-				{
-					_RELEASE(deviceEnumerator);
-					_RELEASE(pEndPoints);
-					InitedDevices.Flags |= eEnableInputRecord;
-				}
+				_RELEASE(deviceEnumerator);
+				_RELEASE(pEndPoints);
+				InitedDevices.Flags |= eEnableInputRecord;
 			}
 		}
 

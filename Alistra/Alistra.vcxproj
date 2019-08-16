@@ -228,7 +228,7 @@
       <DebugInformationFormat>None</DebugInformationFormat>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <ExceptionHandling>false</ExceptionHandling>
-      <CompileAs>CompileAsC</CompileAs>
+      <CompileAs>CompileAsCpp</CompileAs>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <StringPooling>true</StringPooling>
@@ -302,13 +302,14 @@
     <ClCompile Include="Base_Thread.cpp" />
     <ClCompile Include="Base_Window.cpp" />
     <ClCompile Include="DemoMixer.cpp" />
+    <ClCompile Include="DemoWindow.cpp" />
     <ClCompile Include="EffectsClass.cpp" />
     <ClCompile Include="entry_point.cpp" />
     <ClCompile Include="FadeOut.cpp" />
-    <ClCompile Include="KickGenerator.cpp" />
     <ClCompile Include="LPFilter.cpp" />
     <ClCompile Include="NoteManager.cpp" />
     <ClCompile Include="Reverb.cpp" />
+    <ClCompile Include="RiffEncoder.cpp" />
     <ClCompile Include="SoftClipper.cpp" />
     <ClCompile Include="SoundWorker.cpp" />
     <ClCompile Include="SynthManager.cpp" />
@@ -329,10 +330,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_Crinkler|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="DemoSettings.h" />
     <ClInclude Include="EffectsClass.h" />
+    <ClInclude Include="RIFFEncoder.h" />
     <ClInclude Include="SoftClipper.h" />
     <ClInclude Include="DemoMixer.h" />
-    <ClInclude Include="KickGenerator.h" />
     <ClInclude Include="NoteManager.h" />
     <ClInclude Include="SynthManager.h" />
   </ItemGroup>

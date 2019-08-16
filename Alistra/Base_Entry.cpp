@@ -57,7 +57,7 @@ RealEntryPoint(
 			MessageBoxW(NULL, L"Can't enumerate devices. Please, restart demo with '-disable_audio' argument", L"–ï–ì–ì–û–ì", MB_OK | MB_ICONHAND);	
 			return -1;
 #else
-			MessageBoxW(NULL, L"Can't enumerate devices. Starting 'Alistra' without sound", L"–í–ê–†–ù–ò–ù–ì", MB_OK | MB_ICONWARNING);
+			MessageBoxA(NULL, "Can't enumerate devices. Starting 'Alistra' without sound", "¬¿–Õ»Õ√ì", MB_OK | MB_ICONWARNING);
 			bAudio = true;
 #endif
 		}
@@ -76,7 +76,7 @@ RealEntryPoint(
 	{
 		if (!InitSound(NULL, NULL))
 		{
-			MessageBoxW(NULL, L"Can't create sound device. Starting 'Alistra' without sound", L"–í–ê–†–ù–ò–ù–ì", MB_OK | MB_ICONWARNING);
+			MessageBoxA(NULL, "Can't create sound device. Starting 'Alistra' without sound", "≈√√Œ√", MB_OK | MB_ICONWARNING);
 			bAudio = true;
 		}
 
