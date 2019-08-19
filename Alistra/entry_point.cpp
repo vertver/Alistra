@@ -78,6 +78,7 @@ int WINAPI wWinMain(
 	}
 
 	HeapFree(GetProcessHeap(), 0, lpOutArgList);
+	LocalFree(lpArgList);
 #endif
 	CoUninitialize();
 

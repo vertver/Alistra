@@ -12,6 +12,12 @@ CEQFilter::Initialize(FILTER_STRUCT* pFilterStruct)
 	memcpy(&FilterStruct, pFilterStruct, sizeof(FILTER_STRUCT));
 }
 
+void
+CEQFilter::SetOptions(FILTER_STRUCT* pFilterStruct)
+{
+	memcpy(&FilterStruct, pFilterStruct, sizeof(FILTER_STRUCT));
+}
+
 void 
 CEQFilter::Process(
 	float** pBuffers,

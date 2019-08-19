@@ -59,6 +59,12 @@
     <ClCompile Include="ChannelPanner.cpp">
       <Filter>Sound\Synth\Effects</Filter>
     </ClCompile>
+    <ClCompile Include="SimpleDelay.cpp">
+      <Filter>Sound\Synth\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="Automation.h">
+      <Filter>Sound\Synth\Effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base.h" />

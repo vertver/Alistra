@@ -3,6 +3,19 @@
 void
 CADSREnvelope::Initialize(ADSR_STRUCT* pADSRStruct, f32 SampleRate)
 {
+	UpdateADSR(pADSRStruct, SampleRate);
+}
+
+void
+CADSREnvelope::Reset()
+{
+	ADSRStruct.fEnvelopeLevel = 0.0;
+	ADSRStruct.iEnvelopeStage = ESTAGE_OFF;
+}
+
+void
+CADSREnvelope::UpdateADSR(ADSR_STRUCT* pADSRStruct, f32 SampleRate)
+{
 	memcpy(&ADSRStruct, pADSRStruct, sizeof(ADSR_STRUCT));
 	f32 A = pADSRStruct->fAttack * 0.001f * SampleRate;
 	f32 D = pADSRStruct->fDecay * 0.001f * SampleRate;
@@ -14,14 +27,7 @@ CADSREnvelope::Initialize(ADSR_STRUCT* pADSRStruct, f32 SampleRate)
 	ReleaseKoef = (R <= 0.0) ? 0.0 : expf(-logf((1.0 + pADSRStruct->fDecayReleaseCurve) / pADSRStruct->fDecayReleaseCurve) / R);
 	AttackBase = (1.0 + pADSRStruct->fAttackCurve) * (1.0 - AttackKoef);
 	DecayBase = (SustainLevel - pADSRStruct->fDecayReleaseCurve) * (1.0 - DecayKoef);
-	ReleaseBase = -pADSRStruct->fDecayReleaseCurve * (1.0 - ReleaseKoef);
-}
-
-void
-CADSREnvelope::Reset()
-{
-	ADSRStruct.fEnvelopeLevel = 0.0;
-	ADSRStruct.iEnvelopeStage = ESTAGE_OFF;
+	ReleaseBase = -pADSRStruct->fDecayReleaseCurve * (1.0 - ReleaseKoef); 
 }
 
 void

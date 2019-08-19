@@ -29,3 +29,9 @@ CEffectsClass::Process(float** pBuffers, size_t Frames)
 	SimpleFilter[1].Process(pBuffers, Frames);
 	SimpleReverb.Process(pBuffers, Frames);
 }
+
+void
+CEffectsClass::SetFilterOptions(FILTER_STRUCT* pFilterOption)
+{
+	SimpleFilter[0].SetOptions(pFilterOption);
+}

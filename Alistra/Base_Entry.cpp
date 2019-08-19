@@ -73,6 +73,7 @@ RealEntryPoint(
     const bool render = InitRender(isImgui);
     assert(render);
 	SetInitedEvent();
+	SetSoundExport();
 
 	if (!bAudio)
 	{

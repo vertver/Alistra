@@ -18,6 +18,7 @@ public:
 	void Initialize(ADSR_STRUCT* pADSRStruct, f32 SampleRate);
 	void Reset();
 
+	void UpdateADSR(ADSR_STRUCT* pADSRStruct, f32 SampleRate);
 	void BeginAttack();
 	void BeginRelease();
 

@@ -8,8 +8,9 @@
 #define WHOLE_NOTES_COUNT 123.f
 #define MAX_NOTES 6
 #define MAX_AUTOMIZES 64
-#define MAX_SYNTHS 8
+#define MAX_SYNTHS 10
 #define MAX_POLY 16
+#define MAX_DELAYBUFFERS 8
 #define SYNTHBUFFER_SIZE 280
 #define MAX_FRAME_SIZE SYNTHBUFFER_SIZE
 
@@ -145,10 +146,8 @@ typedef struct
 
 typedef struct
 {
-	f32 fMaxRoomsize;
-	f32 fRoomSize;
 	f32 fTime;
-	f32 fDamping;
+	f32 fFeedback;
 	f32 fMix;
 } REVERB_STRUCT;
 
@@ -195,7 +194,7 @@ typedef struct
 {
 	f32 fPoint;
 	size_t Frame;
-} AUTOMIZE;
+} AUTOMATION_STRUCT;
 
 typedef struct  
 {	
@@ -256,26 +255,55 @@ public:
 class CEQFilter
 {
 private:
+	bool isFirst;
 	float FloatTempArray1[4];
 	float FloatTempArray2[4];
 	FILTER_STRUCT FilterStruct;
-	AUTOMIZE AutomizeStruct[MAX_AUTOMIZES];
 
 public:
 	void Initialize(FILTER_STRUCT* pFilterStruct);
+	void SetOptions(FILTER_STRUCT* pFilterStruct);
 	void Process(float** pBuffers, size_t Frames);
 	void Reset();
+};
+
+class CDelay
+{
+private:
+	u32 Position;
+	u32 DelayLength;
+	f32 fVolume;
+	f32* pDelayBuffer;
+
+public:
+	CDelay() { Position = 0; DelayLength = 0; pDelayBuffer = nullptr; }
+	void Initialize(u32 Length, f32 Volume);
+	void Reset();	
+	
+	f32 Fetch();
+	void Feed(f32 Value);
 };
 
 class CReverbEffect
 {
 private:
 	f32 fSampleRate;
+	i32 DelaySamples;
+	i32 DelayBuffers;
+	i32 Delays[MAX_DELAYBUFFERS];
+	CDelay Delay[MAX_DELAYBUFFERS];
 	REVERB_STRUCT ReverbStruct;
-	AUTOMIZE AutomizeStruct[MAX_AUTOMIZES];
 
 public:
 	CReverbEffect() {}
+	~CReverbEffect()
+	{
+		for (size_t i = 0; i < MAX_DELAYBUFFERS; i++)
+		{
+			Delay[i].Reset();
+		}
+	}
+
 	void Initialize(REVERB_STRUCT* pReverbStruct, size_t SampleRate);
 	void Process(float** pBuffers, size_t Frames);
 	void Reset();
