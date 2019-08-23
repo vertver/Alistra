@@ -286,7 +286,7 @@ GetCurrentRMS()
 		RMSSize = (float)(FramesCount - BufferPosition);
 	}
 
-	for (size_t i = 0; i < RMSSize; i++)
+	for (size_t i = 0; i < (size_t)RMSSize; i++)
 	{
 		fRMSValue += (BaseBuffer[BufferPosition + i] * BaseBuffer[BufferPosition + i]);
 	}
