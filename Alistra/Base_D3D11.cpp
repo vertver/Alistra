@@ -10,34 +10,13 @@
 #include <DirectXMath.h>
 #include <cmath>
 
-typedef struct 
-{
-    DirectX::XMFLOAT3 Pos;
-    DirectX::XMFLOAT4 Color;
-} Vertex;
-
-typedef struct 
-{
-    DirectX::XMMATRIX mWorld;
-    DirectX::XMMATRIX mView;
-    DirectX::XMMATRIX mProjection;
-} MatrixBuffer;
-
 __declspec(align(16)) typedef struct
 {
-    DirectX::XMMATRIX World;
-    DirectX::XMMATRIX WorldInverse;
-    DirectX::XMFLOAT3 lightDirection;
+    DirectX::XMFLOAT2 resolution;
+    float time;
 } ComputeConstantBuffer;
 
-__declspec(align(16)) typedef struct
-{
-    float  power;
-    float  darkness;
-    float  blackAndWhite;
-    DirectX::XMFLOAT3 colorAMix;
-    DirectX::XMFLOAT3 colorBMix;
-} ComputeInputBuffer;
+
 
 //#pragma comment(lib, "dxguid.lib")
 //#pragma comment(lib, "d3d11.lib")
@@ -70,9 +49,7 @@ ID3D11DepthStencilView*         pDepthStencilView   = nullptr;
 ID3D11RasterizerState*          pRasterState        = nullptr;
 ID3D11VertexShader*             pVertexShader       = nullptr;
 ID3D11PixelShader*              pPixelShader        = nullptr;
-ID3D11Buffer*                   pVertexBuffer       = nullptr;
-ID3D11Buffer*                   pIndexBuffer        = nullptr;
-ID3D11Buffer*                   pMatrixBuffer       = nullptr;
+
 
 ID3D11Buffer*                   pComputeConstBuffer = nullptr;
 ID3D11Buffer*                   pComputeInputBuffer = nullptr;
@@ -84,10 +61,6 @@ ID3D11ShaderResourceView*       pSRV                = nullptr;
 PFN_D3D11_CREATE_DEVICE_AND_SWAP_CHAIN pD3D11CreateDeviceAndSwapChain = nullptr;
 
 LPCWSTR g_ShaderFile = L"Test.fx";
-
-DirectX::XMMATRIX g_World;
-DirectX::XMMATRIX g_View;
-DirectX::XMMATRIX g_Projection;
 
 bool InitTexture(float width, float height);
 
@@ -186,27 +159,6 @@ bool InitPixelShader()
 void SetProjectionMatrix(float width, float height)
 {
 	D3D11_VIEWPORT viewport;
-    float aspect;
-    float left = -5.0f;
-    float right = 5.0f;
-    float bottom = -5.0f;
-    float top = 5.0f;
-    const float nearZ = -18.0f;
-    const float farZ = 18.0f;
-
-    if (width > height) {
-        aspect = width / height;
-        left *= aspect;
-        right *= aspect;
-    }
-    else {
-        aspect = height / width;
-        bottom *= aspect;
-        top *= aspect;
-    }
-
-    g_Projection = DirectX::XMMatrixOrthographicOffCenterLH(left, right, bottom, top, nearZ, farZ);
-
 	// Setup the viewport for rendering.
 	viewport.Width = static_cast<float>(width);
 	viewport.Height = static_cast<float>(height);
@@ -215,9 +167,9 @@ void SetProjectionMatrix(float width, float height)
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
 
+    InitTexture(width, height);
 	// Create the viewport.
     pContext->RSSetViewports(1, &viewport);
-    InitTexture(width, height);
 }
 
 bool InitTexture(float width, float height)
@@ -284,9 +236,8 @@ bool InitComputeShader(D3D11_VIEWPORT *view_port)
 
     ComputeConstantBuffer constBuffer;
 
-    constBuffer.World = DirectX::XMMatrixTranspose(g_Projection);
-    constBuffer.WorldInverse = DirectX::XMMatrixInverse(nullptr, constBuffer.World);
-    constBuffer.lightDirection = DirectX::XMFLOAT3(5.0f, 12.0f, 3.0f);
+    constBuffer.resolution = DirectX::XMFLOAT2(view_port->Width, view_port->Height);
+    constBuffer.time = 0.0f;
 
     D3D11_BUFFER_DESC constDesc;
     ZeroMemory(&constDesc, sizeof(constDesc));
@@ -305,123 +256,12 @@ bool InitComputeShader(D3D11_VIEWPORT *view_port)
         return false;
     }
 
-    ComputeInputBuffer inputBuffer;
-    inputBuffer.blackAndWhite = 0.0f;
-    inputBuffer.colorAMix = DirectX::XMFLOAT3(0.5f, 0.1f, 0.0f);
-    inputBuffer.colorBMix = DirectX::XMFLOAT3(1.0f, 0.8f, 0.0f);
-    inputBuffer.darkness = 70.0f;
-    inputBuffer.power = 1000.0f;
-
-    D3D11_BUFFER_DESC inputDesc;
-    ZeroMemory(&inputDesc, sizeof(inputDesc));
-    inputDesc.Usage = D3D11_USAGE_DEFAULT;
-    inputDesc.ByteWidth = sizeof(ComputeInputBuffer);
-    inputDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    inputDesc.CPUAccessFlags = 0;
-    D3D11_SUBRESOURCE_DATA inputData;
-    ZeroMemory(&inputData, sizeof(inputData));
-    data.pSysMem = &inputDesc;
-    hr = pDevice->CreateBuffer(&constDesc, &data, &pComputeInputBuffer);
-
-    if (FAILED(hr))
-    {
-        return false;
-    }
-
     return true;
 }
 
 bool InitGeometry(D3D11_VIEWPORT *view_port)
 {
-    //Vertex vertices[] =
-    //{
-    //    { {-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, 1.0f, 1.0f} },
-    //    { {1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f, 1.0f} },
-    //    {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 1.0f, 1.0f} },
-    //    {{-1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f} },
-    //    {{-1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 1.0f, 1.0f} },
-    //    {{1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 0.0f, 1.0f}},
-    //    {{1.0f, -1.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}},
-    //    {{-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f} }
-    //};
-
-    D3D11_BUFFER_DESC bufferDesc;
-    ZeroMemory(&bufferDesc, sizeof(bufferDesc));
-    //
-    //bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-    //bufferDesc.ByteWidth = sizeof(Vertex) * 8;
-    //bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    //bufferDesc.CPUAccessFlags = 0;
-
-    D3D11_SUBRESOURCE_DATA data;
-    ZeroMemory(&data, sizeof(data));
-    //data.pSysMem = vertices;
-
-    //HRESULT hr = pDevice->CreateBuffer(&bufferDesc, &data, &pVertexBuffer);
-    //if (FAILED(hr)) return false;
-
-    //UINT stride = sizeof(Vertex);
-    //UINT offset = 0;
-
-    //pContext->IASetVertexBuffers(0, 1, &pVertexBuffer, &stride, &offset);
-
-    //UINT indices[] =
-    //{
-    //    3, 1, 0,
-    //    2, 1, 3,
-
-    //    0, 5, 4,
-    //    1, 5, 0,
-
-    //    3, 4, 7,
-    //    0, 4, 3,
-
-    //    1, 6, 5,
-    //    2, 6, 1,
-
-    //    2, 7, 6,
-    //    3, 7, 2,
-
-    //    6, 4, 5,
-    //    7, 4, 6 
-    //};
-    //const UINT indicesSize = ARRAYSIZE(indices);
-    //bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-    //bufferDesc.ByteWidth = sizeof(UINT) * indicesSize;
-    //bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    //bufferDesc.CPUAccessFlags = 0;
-    //data.pSysMem = indices;
-    //hr = pDevice->CreateBuffer(&bufferDesc, &data, &pIndexBuffer);
-    //if (FAILED(hr)) return false;
-
-    //pContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-    //pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-    MatrixBuffer constants;
-    g_World = DirectX::XMMatrixIdentity();
-
-    auto cameraPos = DirectX::XMVectorSet(0.0f, 0.0f, 5.0f, 0.0f);
-    auto cameraTarget = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-    auto Up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-
-    g_View = DirectX::XMMatrixLookAtLH(cameraPos, cameraTarget, Up);
-    //g_View = Matrix4LookAtLH();
-
     SetProjectionMatrix(view_port->Width, view_port->Height);
-
-    constants.mWorld = DirectX::XMMatrixTranspose(g_World);
-    constants.mView = DirectX::XMMatrixTranspose(g_View);
-    constants.mProjection = DirectX::XMMatrixTranspose(g_Projection);
-
-    bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-    bufferDesc.ByteWidth = sizeof(MatrixBuffer);
-    bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    bufferDesc.CPUAccessFlags = 0;
-    data.pSysMem = &constants;
-
-    auto hr = pDevice->CreateBuffer(&bufferDesc, &data, &pMatrixBuffer);
-    if (FAILED(hr)) return false;
 
     return true;
 }
@@ -627,6 +467,9 @@ ResizeBuffers:
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
 
+    GlobalWidth = viewport.Width;
+    GlobalHeight = viewport.Height;
+
 	// Create the viewport.
     pContext->RSSetViewports(1, &viewport);
 
@@ -656,9 +499,6 @@ DestroyRender()
 	_RELEASE(pSwapChain);
     _RELEASE(pVertexShader);
     _RELEASE(pPixelShader);
-    _RELEASE(pMatrixBuffer);
-    _RELEASE(pVertexBuffer);
-    _RELEASE(pIndexBuffer);
 }
 
 LPDWORD
@@ -715,19 +555,13 @@ ResizeBuffers:
 
 void BindShaderMatrix()
 {
-    MatrixBuffer matrix_buffer;
-
-    matrix_buffer.mWorld = DirectX::XMMatrixTranspose(g_World);
-    matrix_buffer.mView = DirectX::XMMatrixTranspose(g_View);
-    matrix_buffer.mProjection = DirectX::XMMatrixTranspose(g_Projection);
-
     pContext->CSSetShader(pComputeShader, nullptr, 0);
     pContext->CSSetConstantBuffers(0, 1, &pComputeConstBuffer);
     pContext->CSSetConstantBuffers(1, 1, &pComputeInputBuffer);
     pContext->CSSetUnorderedAccessViews(0, 1, &pUAV, nullptr);
     
-    const int threadGroupX = BASE_WIDTH;
-    const int threadGroupY = BASE_HEIGHT;
+    const int threadGroupX = (int)GlobalWidth;
+    const int threadGroupY = (int)GlobalHeight;
     pContext->Dispatch(threadGroupX, threadGroupY, 1);
     ID3D11UnorderedAccessView* UAVHandlesnull = nullptr;
     pContext->CSSetUnorderedAccessViews(0, 1, &UAVHandlesnull, nullptr);
@@ -743,20 +577,20 @@ void RenderCube()
     pContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);
 
     ComputeConstantBuffer constBuffer;
+    constBuffer.resolution = DirectX::XMFLOAT2(float(GlobalWidth), float(GlobalHeight));
+    const auto timer = GetTickCount64();
 
-    constBuffer.World = DirectX::XMMatrixTranspose(g_View);
-    constBuffer.WorldInverse = DirectX::XMMatrixInverse(nullptr, constBuffer.World);
-    constBuffer.lightDirection = DirectX::XMFLOAT3(5.0f, 12.0f, 3.0f);
+    constBuffer.time = static_cast<float>(timer) * 0.005;
+
     pContext->UpdateSubresource(pComputeConstBuffer, 0, nullptr, &constBuffer, 0, 0);
-    //pContext->UpdateSubresource(pMatrixBuffer, 0, nullptr, &matrix_buffer, 0, 0);
+
     pContext->VSSetShader(pVertexShader, nullptr, 0);
     pContext->PSSetShader(pPixelShader, nullptr, 0);
     pContext->PSSetShaderResources(0, 1, &pSRV);
-    //pContext->VSSetConstantBuffers(0, 1, &pMatrixBuffer);
+
     pContext->Draw(3, 0);
 }
 
-float test = 0.0f;
 bool RenderDraw()
 {
 	static bool isFirst = true;
@@ -781,18 +615,8 @@ bool RenderDraw()
     //ID3D11DeviceContext_ClearDepthStencilView(pContext, pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0.0f);
     pContext->OMSetRenderTargets(1, &pRTView, nullptr);
 
-    const float radius = 5.0f;
-
-    const auto cameraPos = DirectX::XMVectorSet(std::sinf(orbit)*radius, 1.0f, -2.0f + std::cosf(orbit)*radius*2.0f, 0.0f);
-    const auto cameraTarget = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-    const auto Up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-
-    g_View = DirectX::XMMatrixLookAtLH(cameraPos, cameraTarget, Up);
-
     BindShaderMatrix();
     RenderCube();
-    orbit += 0.005f;
     hr = pSwapChain->Present(bVSync, 0);
     
 	/*
