@@ -235,7 +235,7 @@ void GetExportPath(wchar_t* pOutpath);
 /*
 	Sound size in frames
 */
-bool CreateSoundWorker(boolean* pIsDoneBool);
+bool CreateSoundWorker(bool* pIsDoneBool);
 void SoundWorkerProc(void* pParams);
 float GetSoundWorkerProcess();
 bool IsSoundWorkerEnded();

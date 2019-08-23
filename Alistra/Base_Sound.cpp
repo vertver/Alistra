@@ -143,7 +143,7 @@ SoundWorkerProc(
 
 bool
 CreateSoundWorker(
-	boolean* pIsDoneBool
+	bool* pIsDoneBool
 )
 {
 	memset(&thInfo, 0, sizeof(THREAD_INFO));

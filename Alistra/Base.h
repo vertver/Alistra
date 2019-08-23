@@ -43,7 +43,6 @@ typedef struct
 constexpr unsigned int BASE_WIDTH   { 1280 };
 constexpr unsigned int BASE_HEIGHT  {  720 };
 
-
 int RealEntryPoint(char** argv, int argc);
 bool GetSystemVersion(BASE_OS_VERSION_INFO* pVersion);
 bool LoadFile(const wchar_t* PathToFile, void** OutFile, size_t* OutSize);

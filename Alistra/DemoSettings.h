@@ -1,4 +1,4 @@
 #pragma once
 #include <windows.h>
 
-bool OpenSettings();
+bool OpenSettings(bool& bVSYNC, bool& bFullscreen);

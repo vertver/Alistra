@@ -5,7 +5,6 @@
 #include <cstdio>
 
 bool Window_Flag_Resizeing = false;
-float fLoadProcess = 0.0f;
 HANDLE hCloseEvent = NULL;
 HANDLE hWaitForInit = NULL;
 HANDLE hThread = NULL;
@@ -198,7 +197,10 @@ GetMainWindowHandle()
 }
 
 HWND 
-CreateMainWindow()
+CreateMainWindow(
+	int Width, 
+	int Height
+)
 {
 	/*
 		Create close event
@@ -247,12 +249,4 @@ MainWindowLoop(
 	}
 
 	DestroySound();
-}
-
-void
-SetLoadProcess(
-	float floatProcess
-)
-{
-	fLoadProcess = floatProcess;
 }

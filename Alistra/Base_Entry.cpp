@@ -2,6 +2,7 @@
 #include "Base_Sound.h"
 #include "Base_Window.h"
 #include "Base_Render.h"
+#include "DemoSettings.h"
 #include <stdio.h>
 #include <cassert>
 
@@ -11,10 +12,12 @@ RealEntryPoint(
 	int argc
 )
 {
-	boolean isInited = false;
-	boolean isAudioWorkerDone = false;
-	boolean isImgui = false;
-	boolean bAudio = false;
+	bool bFullscreen = false;
+	bool bVsync = false;
+	bool isInited = false;
+	bool isAudioWorkerDone = false;
+	bool isImgui = false;
+	bool bAudio = false;
 
 #ifdef DEBUG
 	for (int i = 0; i < argc; i++)
@@ -64,14 +67,17 @@ RealEntryPoint(
 		}
 	}
 
-	HWND hwnd = CreateMainWindow();
+#ifndef DEBUG
+	if (!OpenSettings(bVsync, bFullscreen)) return false;
+#endif
+
+	HWND hwnd = CreateMainWindow(0, 0);
 	if (!hwnd) return -4;
 
 	/*
 		Init all stuff
 	*/
-    const bool render = InitRender(isImgui);
-    assert(render);
+    bool render = InitRender(isImgui, bVsync, bFullscreen);
 	SetInitedEvent();
 	SetSoundExport();
 
@@ -100,7 +106,7 @@ RealEntryPoint(
 		{
 			isEnd = (IsSoundWorkerEnded() && IsRenderWorkDone());
 				
-			SetLoadProcess((GetSoundWorkerProcess() * 0.5f) + (GetRenderLoadProcess() * 0.5f));
+			SetLoadProcess((GetSoundWorkerProcess()));
 		}
 		else
 		{

@@ -3,7 +3,7 @@
 /*
 	Our render stuff
 */
-bool InitRender(bool IsImgui);
+bool InitRender(bool IsImgui, bool bVSYNC, bool bFS);
 void DestroyRender();
 
 bool ResizeRender(int Width, int Height);
