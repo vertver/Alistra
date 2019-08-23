@@ -254,6 +254,12 @@ GetSoundWorkerProcess()
 }
 
 DWORD
+GetBufferPosition()
+{
+	return BufferPosition;
+}
+
+DWORD
 GetSampleRate()
 {
 	return dwSampleRate;

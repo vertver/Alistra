@@ -241,6 +241,7 @@ float GetSoundWorkerProcess();
 bool IsSoundWorkerEnded();
 bool IsMusicEnd();
 
+DWORD GetBufferPosition();
 DWORD GetSampleRate();
 bool ProcessSoundWorker(SOUNDDEVICE_INFO* pInfo);
 void SoundWorker(float* FileData, size_t DataSize, int Channels);
