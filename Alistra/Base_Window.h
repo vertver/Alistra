@@ -3,7 +3,7 @@
 
 HWND GetMainWindowHandle();
 
-HWND CreateMainWindow();
+HWND CreateMainWindow(int Width, int Height);
 void DestroyMainWindow();
 
 void MainWindowLoop(bool bAudio);

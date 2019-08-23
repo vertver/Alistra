@@ -198,7 +198,10 @@ GetMainWindowHandle()
 }
 
 HWND 
-CreateMainWindow()
+CreateMainWindow(
+	int Width, 
+	int Height
+)
 {
 	/*
 		Create close event

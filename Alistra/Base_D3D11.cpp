@@ -29,6 +29,7 @@ DEFINE_IID(ID3D11Texture2D, 6f15aaf2, d208, 4e89, 9a, b4, 48, 95, 35, d3, 4f, 9c
 // it is never ImGui
 bool bImgui = false;
 bool bVSync = true;
+bool bFullscreen = false;
 bool bDone = false;
 
 float FOV = 0.f;
@@ -269,7 +270,7 @@ bool InitGeometry(D3D11_VIEWPORT *view_port)
     return true;
 }
 
-bool InitRender(bool IsImgui)
+bool InitRender(bool IsImgui, bool bVSYNC, bool bFS)
 {
 	int Times = 0;
 	D3D_FEATURE_LEVEL feature_level;
@@ -284,6 +285,9 @@ bool InitRender(bool IsImgui)
 	D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
 	D3D11_BLEND_DESC blendStateDescription;
 	HRESULT hr = 0;
+
+	bVSync = bVSYNC;
+	bFullscreen = bFS;
 
 	if (!pD3D11CreateDeviceAndSwapChain)
 	{
@@ -309,7 +313,7 @@ bool InitRender(bool IsImgui)
 	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swap_chain_desc.BufferCount = 1;
 	swap_chain_desc.OutputWindow = static_cast<HWND>(hWnd);
-	swap_chain_desc.Windowed = TRUE;
+	swap_chain_desc.Windowed = !bFullscreen;
 	swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	swap_chain_desc.Flags = 0;
 
