@@ -67,7 +67,7 @@ RealEntryPoint(
 		}
 	}
 
-#ifndef DEBUG
+#ifdef DEBUG
 	if (!OpenSettings(bVsync, bFullscreen)) return false;
 #endif
 
@@ -100,7 +100,7 @@ RealEntryPoint(
 	*/
 	while (!isInited)
 	{
-		boolean isEnd;
+		bool isEnd;
 
 		if (!bAudio)
 		{

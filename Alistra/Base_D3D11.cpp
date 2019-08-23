@@ -39,6 +39,7 @@ float fLoadProcess = 0.0f;
 DWORD GlobalWidth = 0;
 DWORD GlobalHeight = 0;
 
+IDXGIOutput*					pDXGIOutput			= nullptr;
 IDXGISwapChain*                 pSwapChain          = nullptr;
 ID3D11Device*                   pDevice             = nullptr;
 ID3D11DeviceContext*            pContext            = nullptr;
@@ -313,7 +314,7 @@ bool InitRender(bool IsImgui, bool bVSYNC, bool bFS)
 	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swap_chain_desc.BufferCount = 1;
 	swap_chain_desc.OutputWindow = static_cast<HWND>(hWnd);
-	swap_chain_desc.Windowed = !bFullscreen;
+	swap_chain_desc.Windowed = TRUE;
 	swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	swap_chain_desc.Flags = 0;
 
