@@ -167,6 +167,8 @@ ProcessSoundWorker(
 	pfMix[0] = FloatMixBuffer1;
 	pfMix[1] = FloatMixBuffer2;
 
+	dwSampleRate = pInfo->Fmt.SampleRate;
+
 	try
 	{
  		if (IsSoundExported())
@@ -259,6 +261,9 @@ GetBufferCount()
 	return FramesCount;
 }
 
+/*
+	To convert this value to time, we need to division this value by sample rate
+*/
 DWORD
 GetBufferPosition()
 {
@@ -269,6 +274,38 @@ DWORD
 GetSampleRate()
 {
 	return dwSampleRate;
+}
+
+float
+GetCurrentRMS()
+{
+	float RMSSize = 1024;
+	float fRMSValue = 0.f;
+	if (BufferPosition + 1024 < FramesCount)
+	{
+		RMSSize = (float)(FramesCount - BufferPosition);
+	}
+
+	for (size_t i = 0; i < RMSSize; i++)
+	{
+		fRMSValue += (BaseBuffer[BufferPosition + i] * BaseBuffer[BufferPosition + i]);
+	}
+
+	fRMSValue /= RMSSize;
+	fRMSValue = sqrtf(fRMSValue);
+	return fRMSValue;
+}
+
+float
+GetCurrentMilliseconds()
+{
+	return GetBufferPosition() / (float)GetSampleRate() * 1000.f;
+}
+
+float 
+GetGlobalMilliseconds()
+{
+	return GetBufferCount() / (float)GetSampleRate() * 1000.f;
 }
 
 void 

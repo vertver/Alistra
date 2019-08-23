@@ -188,6 +188,7 @@ bool InitTexture(float width, float height)
     texDesc.SampleDesc.Quality = 0;
     texDesc.Usage = D3D11_USAGE_DEFAULT;
 
+	_RELEASE(pComputeTexture);
     auto hr = pDevice->CreateTexture2D(&texDesc, nullptr, &pComputeTexture);
 
     if(FAILED(hr)) return false;
@@ -197,6 +198,7 @@ bool InitTexture(float width, float height)
     uavDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
     uavDesc.Texture2D.MipSlice = 0;
+	_RELEASE(pUAV);
     hr = pDevice->CreateUnorderedAccessView(pComputeTexture, &uavDesc, &pUAV);
     if (FAILED(hr)) return false;
 
@@ -207,6 +209,7 @@ bool InitTexture(float width, float height)
     srvDesc.Texture2D.MipLevels = 1;
     srvDesc.Texture2D.MostDetailedMip = 0;
 
+	_RELEASE(pSRV);
     hr = pDevice->CreateShaderResourceView(pComputeTexture, &srvDesc, &pSRV);
 
     if(FAILED(hr)) return false;
@@ -521,9 +524,8 @@ bool ResizeRender(int Width, int Height)
 	ID3D11Texture2D* back_buffer = nullptr;
 	D3D11_RENDER_TARGET_VIEW_DESC desc;
 
+	pContext->OMSetRenderTargets(0, nullptr, nullptr);
     if (pRTView) pRTView->Release();
-
-    pContext->OMSetRenderTargets(0, nullptr, nullptr);
 
 ResizeBuffers:
     const HRESULT hr = pSwapChain->ResizeBuffers(0, Width, Height, DXGI_FORMAT_UNKNOWN, 0);
