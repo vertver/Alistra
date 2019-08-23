@@ -106,7 +106,7 @@ RealEntryPoint(
 		{
 			isEnd = (IsSoundWorkerEnded() && IsRenderWorkDone());
 				
-			SetLoadProcess((GetSoundWorkerProcess() * 0.5f) + (GetRenderLoadProcess() * 0.5f));
+			SetLoadProcess((GetSoundWorkerProcess()));
 		}
 		else
 		{

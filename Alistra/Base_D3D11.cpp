@@ -34,7 +34,7 @@ bool bDone = false;
 
 float FOV = 0.f;
 float ScreenAspectRatio = 0.f;
-float fRenderLoadProcess = 0.0f;
+float fLoadProcess = 0.0f;
 
 DWORD GlobalWidth = 0;
 DWORD GlobalHeight = 0;
@@ -666,12 +666,21 @@ bool RenderDraw()
 	return true;
 }
 
-float GetRenderLoadProcess()
-{
-	return fRenderLoadProcess;
-}
-
 bool IsRenderWorkDone()
 {
 	return true;
+}
+
+void
+SetLoadProcess(
+	float floatProcess
+)
+{
+	fLoadProcess = floatProcess;
+}
+
+float
+GetRenderLoadProcess()
+{
+	return fLoadProcess;
 }
