@@ -254,6 +254,12 @@ GetSoundWorkerProcess()
 }
 
 DWORD
+GetBufferCount()
+{
+	return FramesCount;
+}
+
+DWORD
 GetBufferPosition()
 {
 	return BufferPosition;

@@ -241,6 +241,7 @@ float GetSoundWorkerProcess();
 bool IsSoundWorkerEnded();
 bool IsMusicEnd();
 
+DWORD GetBufferCount();
 DWORD GetBufferPosition();
 DWORD GetSampleRate();
 bool ProcessSoundWorker(SOUNDDEVICE_INFO* pInfo);
