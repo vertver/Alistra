@@ -6,20 +6,22 @@ cbuffer ConstantBuffer : register(b0)
     float time;
 };
 
-float map(float3 p)
+float map(float3 p, float3 camera, float3 ray)
 {
-    float3 q = frac(p) * 2.0 - 1.0;
-    return length(q) - 0.25;
+    float3 q = fmod(p, 1.);
+    return length(q) - camera;
 }
 
-float trace(float3 o, float3 r)
+float trace(float3 camera, float3 ray)
 {
     float t = 0.0;
     for (int i = 0; i < 64; i++) 
     {
-        float3 p = o + r * t;
+        float tochnost = 0.0005*t; // ;)
+        float3 p = camera + ray * t;
 
-        float d = map(p);
+        float d = map(p, camera, ray);
+        if (d < tochnost || t>200.) break;
         t += d * 0.5;
     }
     return t;
@@ -38,7 +40,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 
     float3 ray = normalize(float3(uv, 1.0));
     float timeSlow = time * 0.1;
-    ray.xz = mul(ray.xz, float2x2(cos(timeSlow), -sin(timeSlow), sin(timeSlow), cos(timeSlow)));
+    //ray.xz = mul(ray.xz, float2x2(cos(timeSlow), -sin(timeSlow), sin(timeSlow), cos(timeSlow)));
 
     float3 cameraPos = float3(0.0, 0.0, time);
 
