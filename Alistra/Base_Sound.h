@@ -276,7 +276,7 @@ private:
 	f32* pDelayBuffer;
 
 public:
-	CDelay() { Position = 0; DelayLength = 0; pDelayBuffer = nullptr; }
+	CDelay() { fVolume = 0.f; Position = 0; DelayLength = 0; pDelayBuffer = nullptr; }
 	void Initialize(u32 Length, f32 Volume);
 	void Reset();	
 	

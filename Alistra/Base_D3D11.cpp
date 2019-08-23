@@ -470,7 +470,13 @@ bool InitRender(bool IsImgui)
 	swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	swap_chain_desc.Flags = 0;
 
-	if (FAILED(pD3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_DEBUG, nullptr, 0, D3D11_SDK_VERSION, &swap_chain_desc, &pSwapChain, &pDevice, &feature_level, &pContext)))
+#ifdef DEBUG
+	UINT FlagDebug = D3D11_CREATE_DEVICE_DEBUG;
+#else
+	UINT FlagDebug = 0;
+#endif
+
+	if (FAILED(pD3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, FlagDebug, nullptr, 0, D3D11_SDK_VERSION, &swap_chain_desc, &pSwapChain, &pDevice, &feature_level, &pContext)))
 	{
 		/*
 			If hardware device fails, then try WARP high-performance

@@ -39,7 +39,7 @@ typedef HANDLE	(WINAPI *FAvSetMmThreadCharacteristics)		(LPCSTR, LPDWORD);
 typedef BOOL	(WINAPI *FAvRevertMmThreadCharacteristics)	(HANDLE);
 typedef BOOL	(WINAPI *FAvSetMmThreadPriority)			(HANDLE, AVRT_PRIORITY);
 
-bool isSoundExported;
+bool isSoundExported = false;
 HMODULE hDInputDLL = 0;
 HANDLE hMMCSS = NULL;
 HANDLE hWasapiCloseEvent = NULL;
@@ -111,7 +111,7 @@ IsSoundExported()
 void
 GetExportPath(wchar_t* pOutpath)
 {
-	wcscat_s(pOutpath, MAX_PATH, L"G:\\Alistra\\Alistra\\Alistra_output.raw");
+	wcscat_s(pOutpath, MAX_PATH, L"Alistra_output.raw");
 }
 
 bool
@@ -168,7 +168,7 @@ WasapiThreadProc(
 	*/
 	DWORD dwTask = 0;
 	hMMCSS = pAvSetMmThreadCharacteristicsA("Audio", &dwTask);
-	if (!hMMCSS || FAILED(pAvSetMmThreadPriority(hMMCSS, AVRT_PRIORITY_CRITICAL)))
+	if (!hMMCSS || !pAvSetMmThreadPriority(hMMCSS, AVRT_PRIORITY_CRITICAL))
 	{
 		return;
 	}
