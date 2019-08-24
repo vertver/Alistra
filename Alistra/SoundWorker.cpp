@@ -279,21 +279,28 @@ GetSampleRate()
 float
 GetCurrentRMS()
 {
-	float RMSSize = 1024;
-	float fRMSValue = 0.f;
-	if (BufferPosition + 1024 < FramesCount)
+	if (BaseBuffer)
 	{
-		RMSSize = (float)(FramesCount - BufferPosition);
-	}
+		float RMSSize = 4;
+		float fRMSValue = 0.f;
+		if (BufferPosition + 4 < FramesCount)
+		{
+			RMSSize = (float)(FramesCount - BufferPosition);
+		}
 
-	for (size_t i = 0; i < (size_t)RMSSize; i++)
+		for (size_t i = 0; i < (size_t)RMSSize; i++)
+		{
+			fRMSValue += (BaseBuffer[BufferPosition + i] * BaseBuffer[BufferPosition + i]);
+		}
+
+		fRMSValue /= RMSSize;
+		fRMSValue = sqrtf(fRMSValue);
+		return fRMSValue;
+	}
+	else
 	{
-		fRMSValue += (BaseBuffer[BufferPosition + i] * BaseBuffer[BufferPosition + i]);
+		return 0.f;
 	}
-
-	fRMSValue /= RMSSize;
-	fRMSValue = sqrtf(fRMSValue);
-	return fRMSValue;
 }
 
 float

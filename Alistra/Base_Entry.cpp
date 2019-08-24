@@ -55,7 +55,7 @@ RealEntryPoint(
 		size_t InCountDevices = 0;
 		size_t OutCountDevices = 0;	
 
-		if (!EnumerateOutputDevices(&pOut_Info, &OutCountDevices) || !EnumerateInputDevices(&pIn_Info, &InCountDevices))
+		if (!EnumerateOutputDevices(&pOut_Info, &OutCountDevices))
 		{
 #ifdef DEBUG
 			MessageBoxW(NULL, L"Can't enumerate devices. Please, restart demo with '-disable_audio' argument", L"ЕГГОГ", MB_OK | MB_ICONHAND);	
@@ -67,7 +67,7 @@ RealEntryPoint(
 		}
 	}
 
-#ifdef DEBUG
+#ifndef DEBUG
 	if (!OpenSettings(bVsync, bFullscreen)) return false;
 #endif
 

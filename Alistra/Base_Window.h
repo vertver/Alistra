@@ -12,6 +12,5 @@ void MainWindowDestroyEvent();
 void SetInitedEvent();
 
 void SetLoadProcess(float floatProcess);
-void SetRenderLoadProcess();
 float GetRenderLoadProcess();
 bool IsRenderWorkDone();

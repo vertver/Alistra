@@ -4,6 +4,7 @@ cbuffer ConstantBuffer : register(b0)
 {
     float2 resolution;
     float time;
+	float fRMS;
 };
 
 float map(float3 p, float3 camera, float3 ray)
@@ -40,15 +41,13 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 
     float3 ray = normalize(float3(uv, 1.0));
     float timeSlow = time * 0.1;
-    //ray.xz = mul(ray.xz, float2x2(cos(timeSlow), -sin(timeSlow), sin(timeSlow), cos(timeSlow)));
+    ray.xz = mul(ray.xz, float2x2(cos(timeSlow), -sin(timeSlow), sin(timeSlow), cos(timeSlow)));
 
-    float3 cameraPos = float3(0.0, 0.0, time);
-
+    float3 cameraPos = float3(0.0, 0.0, time * fRMS);
     float traceResult = trace(cameraPos, ray);
-
     float fog = 1.0 / (1.0 + traceResult * traceResult * 0.1);
-
-    Destination[id.xy] = float4(fog.xxx, 1.0);
+    Destination[id.xy] = float4(fog.xxx * fRMS * 3.f, 1.0);
+	
 
     //float4 pz = float4(p, time, 1.0);
     //float4 d = pz;

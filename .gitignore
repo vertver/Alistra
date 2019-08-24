@@ -55,3 +55,10 @@ Module.symvers
 Mkfile.old
 dkms.conf
 Alistra/Alistra_output.raw
+*.log
+*.lastbuildstate
+*.lastbuildstate
+*.tlog
+Alistra_release.zip
+README.txt
+Release/Alistra_output.raw

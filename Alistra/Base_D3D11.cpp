@@ -1,11 +1,10 @@
 #include "Base.h"
 #include "Base_Window.h"
 #include "Base_Render.h"
+#include "Base_Sound.h"
 #include <cstdio>
 
 #include <d3d11.h>
-#include <d3dcompiler.h>
-
 #define _XM_NO_INTRINSICS_ 
 #include <DirectXMath.h>
 #include <cmath>
@@ -14,13 +13,94 @@ __declspec(align(16)) typedef struct
 {
     DirectX::XMFLOAT2 resolution;
     float time;
+	float fRMS;
 } ComputeConstantBuffer;
 
+const char* CSShader =
+"RWTexture2D<float4> Destination : register(u0);"
+""
+"cbuffer ConstantBuffer : register(b0)"
+"{"
+"float2 resolution;"
+"float time;"
+"float fRMS;"
+"};"
+""
+"float map(float3 p, float3 camera, float3 ray)"
+"{"
+"	float3 q = fmod(p, 1.);"
+"	return length(q) - camera;"
+"}"
+""
+"float trace(float3 camera, float3 ray)"
+"{"
+"	float t = 0.0;"
+"	for (int i = 0; i < 64; i++)"
+"	{"
+"	float tochnost = 0.0005 * t;"
+"	float3 p = camera + ray * t;"
+"	float d = map(p, camera, ray);"
+"	if (d < tochnost || t>200.) break;"
+"	t += d * 0.5;"
+"	}"
+"return t;"
+"}"
+""
+"[numthreads(1, 1, 1)]"
+"void CSMain(uint3 id : SV_DispatchThreadID)"
+"{"
+"	uint width;"
+"	uint height;"
+"	Destination.GetDimensions(width, height);"
+"	float2 uv = id.xy / float2(width, height);"
+"	uv = (uv * 2.0 - 1.0);"
+"	uv.x *= resolution.x / resolution.y;"
+"	float3 ray = normalize(float3(uv, 1.0));"
+"	float timeSlow = time * 0.1f;"
+"	ray.xz = mul(ray.xz, float2x2(cos(timeSlow), -sin(timeSlow), sin(timeSlow), cos(timeSlow)));"
+"	float3 cameraPos = float3(0.0, 0.0, time * fRMS);"
+"	float traceResult = trace(cameraPos, ray);"
+"	float fog = 1.0 / (1.0 + traceResult * traceResult * 0.1);"
+"	Destination[id.xy] = float4(fog.xxx * fRMS * 3.f, 1.0);"
+"}"
+"";
 
-
-//#pragma comment(lib, "dxguid.lib")
-//#pragma comment(lib, "d3d11.lib")
-#pragma comment(lib,"d3dcompiler.lib")
+const char* TestShader =
+"Texture2D Destination : register(t0);"
+""
+"SamplerState MeshTextureSampler"
+"{"
+"	Filter = MIN_MAG_MIP_LINEAR;"
+"	AddressU = Wrap;"
+"	AddressV = Wrap;"
+"};"
+""
+"struct VS_QUARD_INPUT {"
+"	uint VertexID : SV_VertexID;"
+"};"
+""
+"struct PS_QUARD_INPUT {"
+"	float4 Pos : SV_POSITION;"
+"	float2 texCoord : TEXCOORD;"
+"};"
+""
+""
+"PS_QUARD_INPUT VS(VS_QUARD_INPUT input) {"
+"	PS_QUARD_INPUT output;"
+"	uint id = input.VertexID;"
+"	float x = -1, y = -1;"
+"	x = (id == 2) ? 3.0 : -1.0;"
+"	y = (id == 1) ? 3.0 : -1.0;"
+"	output.Pos = float4(x, y, 1.0, 1.0);"
+"	output.texCoord = output.Pos.xy * 0.5 + 0.5;"
+"	output.texCoord.y = 1.0 - output.texCoord.y;"
+"	return output;"
+"}"
+""
+"float4 PS(PS_QUARD_INPUT input) : SV_Target{"
+	"return Destination.Sample(MeshTextureSampler, input.texCoord);"
+"}"
+"";
 
 float BackGroundTest[] = { 0.1f, 0.1f, 0.1f, 1.0f };
 
@@ -39,7 +119,6 @@ float fLoadProcess = 0.0f;
 DWORD GlobalWidth = 0;
 DWORD GlobalHeight = 0;
 
-IDXGIOutput*					pDXGIOutput			= nullptr;
 IDXGISwapChain*                 pSwapChain          = nullptr;
 ID3D11Device*                   pDevice             = nullptr;
 ID3D11DeviceContext*            pContext            = nullptr;
@@ -52,7 +131,6 @@ ID3D11RasterizerState*          pRasterState        = nullptr;
 ID3D11VertexShader*             pVertexShader       = nullptr;
 ID3D11PixelShader*              pPixelShader        = nullptr;
 
-
 ID3D11Buffer*                   pComputeConstBuffer = nullptr;
 ID3D11Buffer*                   pComputeInputBuffer = nullptr;
 ID3D11ComputeShader*            pComputeShader      = nullptr;
@@ -61,62 +139,89 @@ ID3D11UnorderedAccessView*      pUAV                = nullptr;
 ID3D11ShaderResourceView*       pSRV                = nullptr;
 
 PFN_D3D11_CREATE_DEVICE_AND_SWAP_CHAIN pD3D11CreateDeviceAndSwapChain = nullptr;
-
-LPCWSTR g_ShaderFile = L"Test.fx";
-
 bool InitTexture(float width, float height);
 
-bool CompileShaderFromFile(_In_ LPCWSTR srcFile, _In_ LPCSTR entryPoint, _In_ LPCSTR shaderModel, _Outptr_ ID3DBlob** blob)
+typedef HRESULT(WINAPI* pD3DCompile)
+(LPCVOID                         pSrcData,
+	SIZE_T                          SrcDataSize,
+	LPCSTR                          pFileName,
+	CONST D3D_SHADER_MACRO* pDefines,
+	ID3DInclude* pInclude,
+	LPCSTR                          pEntrypoint,
+	LPCSTR                          pTarget,
+	UINT                            Flags1,
+	UINT                            Flags2,
+	ID3DBlob** ppCode,
+	ID3DBlob** ppErrorMsgs);
+
+pD3DCompile CompilerGraphicsFunc = nullptr;
+
+bool CompileShaderFromString(_In_ LPCSTR srcFile, _In_ LPCSTR entryPoint, _In_ LPCSTR shaderModel, _Outptr_ ID3DBlob** blob)
 {
-    if (!srcFile || !entryPoint || !shaderModel || !blob)
-        return false;
+	HMODULE hDirectLib = nullptr;
+	if (!srcFile || !entryPoint || !shaderModel || !blob)
+		return false;
 
-    *blob = nullptr;
+	*blob = nullptr;
 
-    UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
+	UINT flags = (1 << 11);
 #if defined( DEBUG ) || defined( _DEBUG )
-    flags |= D3DCOMPILE_DEBUG;
+	flags |= (1 << 0);
 #endif
 
-    ID3DBlob* shaderBlob = nullptr;
-    ID3DBlob* errorBlob = nullptr;
+	ID3DBlob* shaderBlob = nullptr;
+	ID3DBlob* errorBlob = nullptr;
 
-    size_t SrcDataSize = 0;
-    void *data = 0;
-    const bool loaded = LoadFile(srcFile, &data,&SrcDataSize);
+	size_t SrcDataSize = strlen(srcFile);
+	void* data = (void*)srcFile;
 
-	if (!loaded)
+	if (!CompilerGraphicsFunc)
 	{
-		MessageBoxW(nullptr, L"Can't load shader file", L"ÅÃÃÎÃ", MB_OK | MB_ICONERROR);
+		// CompilerGraphicsFunc
+		hDirectLib = LoadLibraryA("d3dcompiler_47.dll");
+		if (!hDirectLib || hDirectLib == INVALID_HANDLE_VALUE)
+		{
+			hDirectLib = LoadLibraryA("d3dcompiler_43.dll");
+			if (!hDirectLib || hDirectLib == INVALID_HANDLE_VALUE)
+			{
+				MessageBoxA(nullptr, "Can't find D3D Compiler library.", "ÅÃÃÎÃ", MB_OK | MB_ICONERROR);
+				return false;
+			}
+		}
+
+		CompilerGraphicsFunc = (pD3DCompile)GetProcAddress(hDirectLib, "D3DCompile");
+		if (!CompilerGraphicsFunc)
+		{
+			MessageBoxA(nullptr, "Can't find D3DCompile function.", "ÅÃÃÎÃ", MB_OK | MB_ICONERROR);
+			FreeLibrary(hDirectLib);
+			return false;
+		}
+	}
+
+	const HRESULT hr = CompilerGraphicsFunc(data, SrcDataSize, nullptr, nullptr, ((ID3DInclude*)(UINT_PTR)1),
+		entryPoint, shaderModel, flags, 0, &shaderBlob, &errorBlob);
+
+	if (FAILED(hr))
+	{
+		if (errorBlob)
+		{
+			OutputDebugStringA(static_cast<char*>(errorBlob->GetBufferPointer()));
+		}
+
+		if (errorBlob)
+			_RELEASE(errorBlob);
+
 		return false;
 	}
 
-    const HRESULT hr = D3DCompile(data, SrcDataSize, nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-            entryPoint, shaderModel, flags, 0, &shaderBlob, &errorBlob);
-
-    if (FAILED(hr))
-    {
-        HeapFree(GetProcessHeap(), 0, data);
-        if (errorBlob)
-        {
-            OutputDebugStringA(static_cast<char*>(errorBlob->GetBufferPointer()));
-        }
-
-        if (errorBlob)
-            _RELEASE(errorBlob);
-
-        return false;
-    }
-
-    *blob = shaderBlob;
-    HeapFree(GetProcessHeap(), 0, data);
-    return true;
+	*blob = shaderBlob;
+	return true;
 }
 
 bool InitVertexShader()
 {
     ID3DBlob* vsBlob = nullptr;
-    const bool hr = CompileShaderFromFile(g_ShaderFile, "VS", "vs_5_0", &vsBlob);
+    const bool hr = CompileShaderFromString(TestShader, "VS", "vs_5_0", &vsBlob);
 
 	if (!hr)
 	{
@@ -149,7 +254,7 @@ bool InitVertexShader()
 bool InitPixelShader()
 {
     ID3DBlob *psBlob = nullptr;
-    const bool hr = CompileShaderFromFile(g_ShaderFile, "PS", "ps_5_0", &psBlob);
+    const bool hr = CompileShaderFromString(TestShader, "PS", "ps_5_0", &psBlob);
     if (!hr) return false;
 
     const HRESULT pixelResult = pDevice->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &pPixelShader);
@@ -223,7 +328,7 @@ bool InitComputeShader(D3D11_VIEWPORT *view_port)
 {
     ID3DBlob *csBlob = nullptr;
 
-    HRESULT hr = CompileShaderFromFile(L"TestCompute.hlsl", "CSMain", "cs_5_0", &csBlob);
+    HRESULT hr = CompileShaderFromString(CSShader, "CSMain", "cs_5_0", &csBlob);
 
     if(FAILED(hr))
     {
@@ -436,13 +541,6 @@ ResizeBuffers:
 	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	depthStencilViewDesc.Texture2D.MipSlice = 0;
 
-	// Create the depth stencil view.
-// 	if (FAILED(ID3D11Device_CreateDepthStencilView(pDevice, pDepthStencilBuffer, &depthStencilViewDesc, &pDepthStencilView)))
-// 	{
-// 		return false;
-// 	}
-
-
 	// Bind the render target view and depth stencil buffer to the output render pipeline.
     pContext->OMSetRenderTargets(1, &pRTView, pDepthStencilView);
 
@@ -583,11 +681,14 @@ void RenderCube()
     pContext->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
     pContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);
 
-    ComputeConstantBuffer constBuffer;
+	ComputeConstantBuffer constBuffer = {};
     constBuffer.resolution = DirectX::XMFLOAT2(float(GlobalWidth), float(GlobalHeight));
-    const auto timer = GetTickCount64();
-
-    constBuffer.time = static_cast<float>(timer) * 0.005;
+	if (GetSampleRate() > 0.f)
+	{
+		const float timer = (float)GetBufferPosition() / (float)GetSampleRate();
+		constBuffer.time = static_cast<float>(timer) * 0.005;
+		constBuffer.fRMS = GetCurrentRMS() * 6.f;
+	}
 
     pContext->UpdateSubresource(pComputeConstBuffer, 0, nullptr, &constBuffer, 0, 0);
 

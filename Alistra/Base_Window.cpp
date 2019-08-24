@@ -174,7 +174,7 @@ CreateWindowProc(
 			Draw our application and wait for next time
 		*/
 		RenderDraw();
-		
+
 		/*
 			Required by demoparty rules
 		*/
