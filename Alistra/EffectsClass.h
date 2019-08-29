@@ -1,3 +1,8 @@
+/****************************************************************
+* MZPE Team, 2019.
+* Alistra intro
+* License: MIT
+*****************************************************************/
 #pragma once
 #include "Base_Sound.h"
 #include "SoftClipper.h"

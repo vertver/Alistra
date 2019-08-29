@@ -1,3 +1,8 @@
+/****************************************************************
+* MZPE Team, 2019.
+* Alistra intro
+* License: MIT
+*****************************************************************/
 #pragma once
 #include "Base_Sound.h"
 #include <math.h>
@@ -39,7 +44,7 @@ private:
 	f32 fPrevTriangle;
 	f32 fPulseWeight;
 	f32 fNoiseValue;
-	f64 b0, b1, b2;
+	f32 b0, b1, b2;
 	
 	f32 FreqKoef = 3.1415f * 2.0f / 44100.0f;
 
@@ -48,7 +53,7 @@ private:
 	f32 KickFreq3 = 58.f;
 
 	f32 KickBodyMS = 1200.0f;
-	f32 KickBodyFreq = 1.0 / (KickBodyMS * 0.001f);
+	f32 KickBodyFreq = 1.0f / (KickBodyMS * 0.001f);
 	f32 KickLen = 44100.0f * (KickBodyMS * 0.001f);
 
 	f32 KickMainMS = 80.0f;
@@ -88,7 +93,7 @@ public:
 	{
 		NoteOff();
 		Note = iNote;
-		fFrequency = GetMidiNoteFrequency(iNote);
+		fFrequency = (f32)GetMidiNoteFrequency((f32)iNote);
 		fVelocity = Vel;
 	}
 
@@ -144,7 +149,7 @@ public:
 			{
 				EndSample = (T < (0.5f + fPulseWeight * 0.25f)) ? 1.0f : -1.0f;
 				EndSample += AntiAliasing(T, addPhase);
-				EndSample -= AntiAliasing(fmodf(T + (1.0 - (0.5 + fPulseWeight * 0.25f)), 1.0), addPhase);
+				EndSample -= AntiAliasing(fmodf(T + (1.0f - (0.5f + fPulseWeight * 0.25f)), 1.0f), addPhase);
 			}
 			break;
 			case 4:
@@ -157,7 +162,7 @@ public:
 				fNoiseValue += 19.0f;
 				fNoiseValue *= fNoiseValue;
 				fNoiseValue -= (i32)fNoiseValue;
-				f64 RndValue = fNoiseValue - 0.5f;
+				f32 RndValue = fNoiseValue - 0.5f;
 				b0 = 0.99765f * b0 + RndValue * 0.0990460f;
 				b1 = 0.96300f * b1 + RndValue * 0.2965164f;
 				b2 = 0.57000f * b2 + RndValue * 1.0526913f;
@@ -173,8 +178,8 @@ public:
 				Out = fminf(1.0f, (sinf(Body * 3.1415f * 0.5f) * Out));
 				if (Out > 0.5f) Out = (Out - 0.5f) * 0.5f + 0.5f;
 
-				EndSample = 0.9 * Out;
-				Body += (0 - Body) * (0.00009f) * 2.0f * 0.8f;
+				EndSample = 0.9f * Out;
+				Body += (0.f - Body) * (0.00009f) * 2.0f * 0.8f;
 			}
 				break;
 			default:

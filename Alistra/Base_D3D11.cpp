@@ -1,3 +1,8 @@
+/****************************************************************
+* MZPE Team, 2019.
+* Alistra intro
+* License: MIT
+*****************************************************************/
 #include "Base.h"
 #include "Base_Window.h"
 #include "Base_Render.h"
@@ -177,7 +182,9 @@ bool CompileShaderFromString(_In_ LPCSTR srcFile, _In_ LPCSTR entryPoint, _In_ L
 
 	if (!CompilerGraphicsFunc)
 	{
-		// CompilerGraphicsFunc
+		/*
+			Try to load any D3D compiler library
+		*/
 		hDirectLib = LoadLibraryA("d3dcompiler_47.dll");
 		if (!hDirectLib || hDirectLib == INVALID_HANDLE_VALUE)
 		{
@@ -189,6 +196,9 @@ bool CompileShaderFromString(_In_ LPCSTR srcFile, _In_ LPCSTR entryPoint, _In_ L
 			}
 		}
 
+		/*
+			Get D3DCompile proc from this library
+		*/
 		CompilerGraphicsFunc = (pD3DCompile)GetProcAddress(hDirectLib, "D3DCompile");
 		if (!CompilerGraphicsFunc)
 		{
@@ -372,25 +382,24 @@ bool InitComputeShader(D3D11_VIEWPORT *view_port)
 bool InitGeometry(D3D11_VIEWPORT *view_port)
 {
     SetProjectionMatrix(view_port->Width, view_port->Height);
-
     return true;
 }
 
 bool InitRender(bool IsImgui, bool bVSYNC, bool bFS)
 {
 	int Times = 0;
-	D3D_FEATURE_LEVEL feature_level;
-	DXGI_SWAP_CHAIN_DESC swap_chain_desc;
-	ID3D11Texture2D* back_buffer = nullptr;
-	D3D11_RENDER_TARGET_VIEW_DESC desc;
-	D3D11_TEXTURE2D_DESC depthBufferDesc;
-	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
-	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
-	D3D11_RASTERIZER_DESC rasterDesc;
-	D3D11_VIEWPORT viewport;
-	D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
-	D3D11_BLEND_DESC blendStateDescription;
 	HRESULT hr = 0;
+	ID3D11Texture2D* back_buffer = nullptr;
+	D3D_FEATURE_LEVEL feature_level = {};
+	DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
+	D3D11_RENDER_TARGET_VIEW_DESC desc = {};
+	D3D11_TEXTURE2D_DESC depthBufferDesc = {};
+	D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
+	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
+	D3D11_RASTERIZER_DESC rasterDesc = {};
+	D3D11_VIEWPORT viewport = {};
+	D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc = {};
+	D3D11_BLEND_DESC blendStateDescription = {};
 
 	bVSync = bVSYNC;
 	bFullscreen = bFS;
@@ -573,8 +582,8 @@ ResizeBuffers:
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
 
-    GlobalWidth = viewport.Width;
-    GlobalHeight = viewport.Height;
+    GlobalWidth = (DWORD)viewport.Width;
+    GlobalHeight = (DWORD)viewport.Height;
 
 	// Create the viewport.
     pContext->RSSetViewports(1, &viewport);
@@ -686,7 +695,7 @@ void RenderCube()
 	if (GetSampleRate() > 0.f)
 	{
 		const float timer = (float)GetBufferPosition() / (float)GetSampleRate();
-		constBuffer.time = static_cast<float>(timer) * 0.005;
+		constBuffer.time = static_cast<float>(timer) * 0.005f;
 		constBuffer.fRMS = GetCurrentRMS() * 6.f;
 	}
 

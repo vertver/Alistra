@@ -1,20 +1,9 @@
+/****************************************************************
+* MZPE Team, 2019.
+* Alistra intro
+* License: MIT
+*****************************************************************/
 #include "DemoMixer.h"
-
-/*
-
-	41.f, 40.0f, 7.0f, 0.5f, 0.2f
-	maxroomsize, roomsize, revtime, damping, mix
-
-	*******************************************
-
-	26.0f, 25.0f, 4.5f, 0.5f, 0.2f
-	26.0f, 25.0f, 4.5f, 0.5f, 0.2f
-	20.0f, 19.0f, 1.12f, 0.5f, 0.35f
-	0.f, 0.f, 0.f, 0.f, 0.f
-	46.0f, 45.0f, 4.5f, 0.5f, 0.3f
-	41.0f, 40.0f, 5.7f, 0.5f, 1.0f
-	0.f, 0.f, 0.f, 0.f, 0.f
-*/
 
 const EFFECT_STRUCT AllEffectsForSynths[MAX_SYNTHS] =
 {
@@ -54,7 +43,7 @@ CDemoMixer::Initialize(WAVE_FMT InFmt, AUTOMATION_STRUCT** pStruct, size_t* Auto
 
 	for (size_t i = 0; i < MAX_SYNTHS; i++)
 	{
-		Effects[i].Initalize((EFFECT_STRUCT*)&AllEffectsForSynths[i], InFmt.SampleRate);
+		Effects[i].Initalize((EFFECT_STRUCT*)&AllEffectsForSynths[i], (f32)InFmt.SampleRate);
 		Panner[i].Initialize((PANNER_STRUCT*)&AllPannerSettings[i]);
 
 // 		if (pStruct[i] || Automations[i])

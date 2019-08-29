@@ -1,3 +1,8 @@
+/****************************************************************
+* MZPE Team, 2019.
+* Alistra intro
+* License: MIT
+*****************************************************************/
 #include "ADSR_Synthesizer.h"
 
 void
@@ -22,12 +27,12 @@ CADSREnvelope::UpdateADSR(ADSR_STRUCT* pADSRStruct, f32 SampleRate)
 	f32 R = pADSRStruct->fRelease * 0.001f * SampleRate;
 
 	SustainLevel = pADSRStruct->fSustain;
-	AttackKoef = (A <= 0.0) ? 0.0 : expf(-logf((1.0 + pADSRStruct->fAttackCurve) / pADSRStruct->fAttackCurve) / A);
-	DecayKoef = (D <= 0.0) ? 0.0 : expf(-logf((1.0 + pADSRStruct->fDecayReleaseCurve) / pADSRStruct->fDecayReleaseCurve) / D);
-	ReleaseKoef = (R <= 0.0) ? 0.0 : expf(-logf((1.0 + pADSRStruct->fDecayReleaseCurve) / pADSRStruct->fDecayReleaseCurve) / R);
-	AttackBase = (1.0 + pADSRStruct->fAttackCurve) * (1.0 - AttackKoef);
-	DecayBase = (SustainLevel - pADSRStruct->fDecayReleaseCurve) * (1.0 - DecayKoef);
-	ReleaseBase = -pADSRStruct->fDecayReleaseCurve * (1.0 - ReleaseKoef); 
+	AttackKoef = (A <= 0.0f) ? 0.0f : expf(-logf((1.0f + pADSRStruct->fAttackCurve) / pADSRStruct->fAttackCurve) / A);
+	DecayKoef = (D <= 0.0f) ? 0.0f : expf(-logf((1.0f + pADSRStruct->fDecayReleaseCurve) / pADSRStruct->fDecayReleaseCurve) / D);
+	ReleaseKoef = (R <= 0.0f) ? 0.0f : expf(-logf((1.0f + pADSRStruct->fDecayReleaseCurve) / pADSRStruct->fDecayReleaseCurve) / R);
+	AttackBase = (1.0f + pADSRStruct->fAttackCurve) * (1.0f - AttackKoef);
+	DecayBase = (SustainLevel - pADSRStruct->fDecayReleaseCurve) * (1.0f - DecayKoef);
+	ReleaseBase = -pADSRStruct->fDecayReleaseCurve * (1.0f - ReleaseKoef); 
 }
 
 void

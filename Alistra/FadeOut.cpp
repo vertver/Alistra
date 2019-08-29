@@ -1,3 +1,8 @@
+/****************************************************************
+* MZPE Team, 2019.
+* Alistra intro
+* License: MIT
+*****************************************************************/
 #include "Base_Synth.h"
 
 void
@@ -18,7 +23,7 @@ CFadeOut::Process(
 		for (size_t u = 0; u < Frames; u++)
 		{
 			fRe = pBuffers[i][u];
-			fSign = signf(fRe);
+			fSign = (f32)signf(fRe);
 			fRe = fabsf(fRe) - fTemp * u;
 			fRe = fRe > 0 ? fRe * signf(fRe) : 0;
 			pBuffers[i][u] = fRe;

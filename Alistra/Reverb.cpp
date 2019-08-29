@@ -1,3 +1,8 @@
+/****************************************************************
+* MZPE Team, 2019.
+* Alistra intro
+* License: MIT
+*****************************************************************/
 #include "Base_Synth.h"
 
 void
@@ -7,8 +12,8 @@ CReverbEffect::Initialize(REVERB_STRUCT* pReverbStruct, size_t SampleRate)
 	{
 		memcpy(&ReverbStruct, pReverbStruct, sizeof(REVERB_STRUCT));
 		fSampleRate = (f32)SampleRate;
-		DelaySamples = fSampleRate * (pReverbStruct->fTime / 1000.f);
-		f32 fDelayTime = DelaySamples;
+		f32 fDelayTime = (fSampleRate * (pReverbStruct->fTime / 1000.f));
+		DelaySamples = (i32)fDelayTime;
 
 		for (size_t i = 0; i < MAX_DELAYBUFFERS; i++)
 		{

@@ -1,3 +1,8 @@
+/****************************************************************
+* MZPE Team, 2019.
+* Alistra intro
+* License: MIT
+*****************************************************************/
 #pragma once
 #include "Base.h"
 #include <math.h>
@@ -193,7 +198,7 @@ typedef struct
 typedef struct  
 {
 	f32 fPoint;
-	size_t Frame;
+	f32 Frame;
 } AUTOMATION_STRUCT;
 
 typedef struct  

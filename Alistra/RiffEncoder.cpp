@@ -1,3 +1,8 @@
+/****************************************************************
+* MZPE Team, 2019.
+* Alistra intro
+* License: MIT
+*****************************************************************/
 #include "RIFFEncoder.h"
 
 bool
@@ -53,14 +58,14 @@ CRiffEncoder::Write(void* pData, size_t SizeInBytes)
 		cbTemp[1] = 'a';
 		cbTemp[2] = 't';
 		cbTemp[3] = 'a';
-		dwTemp = SizeInBytes;
+		dwTemp = (DWORD)SizeInBytes;
 		dwTemp2 = dwTemp;
 		cbTemp[4] = pTempPointer[0];
 		cbTemp[5] = pTempPointer[1];
 		cbTemp[6] = pTempPointer[2];
 		cbTemp[7] = pTempPointer[3];
 
-		WriteFile(hFile, pData, SizeInBytes, &dwWriteDataSize, nullptr);
+		WriteFile(hFile, pData, (DWORD)SizeInBytes, &dwWriteDataSize, nullptr);
 		FlushFileBuffers(hFile);
 	}
 }
