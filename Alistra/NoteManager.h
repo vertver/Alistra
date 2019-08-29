@@ -1,8 +1,3 @@
-/****************************************************************
-* MZPE Team, 2019.
-* Alistra intro
-* License: MIT
-*****************************************************************/
 #pragma once
 #include "ADSR_Synthesizer.h"
 #include "EffectsClass.h"
@@ -194,7 +189,7 @@ struct MidiParser
 					{
 						//Set Tempo
 						u32 Tempo = ReadU24();
-						SetTempo(Tempo, roundf(60000000.0f / (f32)Tempo * 1000.0f) * 0.001f, ((f32)Tempo / (f32)PPQ / 1000000.0f));
+						SetTempo(Tempo, round(60000000.0 / (f32)Tempo*1000.0)*0.001, ((f32)Tempo / (f32)PPQ / 1000000.0));
 						break;
 					}
 
@@ -270,7 +265,7 @@ public:
 	{
 		MidiTicks = 0;
 		Samples = 0;
-		Samplerate = (f32)SampleRate;
+		Samplerate = SampleRate;
 		CurrentTick = 0;
 	}
 
@@ -381,7 +376,7 @@ public:
 		ParserLen.Init(SampleRate);
 		ParserLen.Parse(MidiFileData, MidiFileLen);
 
-		DataLen = (u32)ParserLen.Samples * SampleRate + 1;
+		DataLen = ParserLen.Samples * SampleRate + 1;
 		for (u32 i = 0; i < Chanels; i++) Data[i] = (f32*)HeapAlloc(GetProcessHeap(), 0, sizeof(f32) * DataLen);
 
 		Parse(MidiFileData, MidiFileLen);

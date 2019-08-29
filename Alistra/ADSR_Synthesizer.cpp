@@ -1,8 +1,3 @@
-/****************************************************************
-* MZPE Team, 2019.
-* Alistra intro
-* License: MIT
-*****************************************************************/
 #include "ADSR_Synthesizer.h"
 
 void
@@ -66,7 +61,7 @@ CVoiceSynth::NoteOn(i32 Note, i32 Velocity)
 		if (NotesOscs[i] < 2)
 		{
 			NotesOscs[i] = Note;
-			Oscillators[i].NoteOn(Note, (f32)Velocity);
+			Oscillators[i].NoteOn(Note, Velocity);
 			adsrEnvelope[i].BeginAttack();
 			break;
 		}

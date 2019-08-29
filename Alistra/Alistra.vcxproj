@@ -30,7 +30,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{140B3F5B-27DE-4839-8E68-BDCC67358694}</ProjectGuid>
     <RootNamespace>Alistra</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -341,6 +341,9 @@
     <ClInclude Include="DemoMixer.h" />
     <ClInclude Include="NoteManager.h" />
     <ClInclude Include="SynthManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="VoiceClass.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

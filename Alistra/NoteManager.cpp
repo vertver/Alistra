@@ -1,8 +1,3 @@
-/****************************************************************
-* MZPE Team, 2019.
-* Alistra intro
-* License: MIT
-*****************************************************************/
 #include "NoteManager.h"
 #include "Base_Window.h"
 
@@ -1350,10 +1345,10 @@ CNoteManager::Initialize(WAVE_FMT WaveFormat)
 		{
 			pEffects[i] = new CEffectsClass;
 			midiParser[i] = new MidiRender;
-			midiParser[i]->Synthsave.Initialize((SYNTH_STRUCT*)&SynthGlobalStruct[i], (f32)WaveFormat.SampleRate);
+			midiParser[i]->Synthsave.Initialize((SYNTH_STRUCT*)&SynthGlobalStruct[i], WaveFormat.SampleRate);
 			if (!GetMainWindowHandle()) break;
 
-			midiParser[i]->Render(2, WaveFormat.SampleRate, rawData, (u32)rawDataSize);
+			midiParser[i]->Render(2, WaveFormat.SampleRate, rawData, rawDataSize);
 			pSynthBuffers[i][0] = midiParser[i]->Data[0];
 			pSynthBuffers[i][1] = midiParser[i]->Data[1];
 			BufSizes[i] = midiParser[i]->DataLen;

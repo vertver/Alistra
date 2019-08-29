@@ -1,8 +1,3 @@
-/****************************************************************
-* MZPE Team, 2019.
-* Alistra intro
-* License: MIT
-*****************************************************************/
 #pragma once
 #include "Base_Sound.h"
 
@@ -32,7 +27,7 @@ public:
 			memcpy(Automation[i], pAutomation[i], sizeof(AUTOMATION_STRUCT));
 		}
 
-		size_t TempValue = (size_t)(Automation[1]->Frame - Automation[0]->Frame);
+		size_t TempValue = Automation[1]->Frame - Automation[0]->Frame;
 		fToAdd = Automation[1]->fPoint - Automation[0]->fPoint;
 		fToAdd /= (f32)TempValue;
 	}
@@ -55,8 +50,8 @@ public:
 			if (CurrentSample == Automation[CurrentAutomation]->Frame)
 			{
 				size_t TempValue = 0;
-				i64 Temp1 = (i64)Automation[CurrentAutomation + 1]->Frame;
-				i64 Temp2 = (i64)Automation[CurrentAutomation]->Frame;
+				i64 Temp1 = Automation[CurrentAutomation + 1]->Frame;
+				i64 Temp2 = Automation[CurrentAutomation]->Frame;
 				CurrentAutomation = CurrentAutomation < ThisAutomationCount ? CurrentAutomation : ThisAutomationCount - 2;
 				TempValue = abs(Temp1 - Temp2);
 				fToAdd = Automation[CurrentAutomation]->fPoint - Automation[CurrentAutomation + 1]->fPoint;
@@ -125,7 +120,7 @@ public:
 			memcpy(Automation[i], &pAutomation[i], sizeof(AUTOMATION_STRUCT));
 		}
 
-		size_t TempValue = (size_t)(Automation[1]->Frame - Automation[0]->Frame);
+		size_t TempValue = Automation[1]->Frame - Automation[0]->Frame;
 		fToAdd = Automation[1]->fPoint - Automation[0]->fPoint;
 		fToAdd /= (f32)TempValue;
 	}
@@ -148,8 +143,8 @@ public:
 			if (CurrentSample == Automation[CurrentAutomation]->Frame)
 			{
 				size_t TempValue = 0;
-				i64 Temp1 = (i64)Automation[CurrentAutomation + 1]->Frame;
-				i64 Temp2 = (i64)Automation[CurrentAutomation]->Frame;
+				i64 Temp1 = Automation[CurrentAutomation + 1]->Frame;
+				i64 Temp2 = Automation[CurrentAutomation]->Frame;
 				CurrentAutomation = CurrentAutomation < ThisAutomationCount ? CurrentAutomation : ThisAutomationCount - 2;
 				TempValue = abs(Temp1 - Temp2);
 				fToAdd = Automation[CurrentAutomation]->fPoint - Automation[CurrentAutomation + 1]->fPoint;

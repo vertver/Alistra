@@ -1,8 +1,3 @@
-/****************************************************************
-* MZPE Team, 2019.
-* Alistra intro
-* License: MIT
-*****************************************************************/
 #include "Base.h"
 #include "Base_Render.h"
 #include "Base_Thread.h"

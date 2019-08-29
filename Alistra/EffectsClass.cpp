@@ -1,8 +1,3 @@
-/****************************************************************
-* MZPE Team, 2019.
-* Alistra intro
-* License: MIT
-*****************************************************************/
 #include "EffectsClass.h"
 
 void
@@ -14,7 +9,7 @@ CEffectsClass::Initalize(EFFECT_STRUCT* pEffectStruct, f32 fSampleRate)
 	SimpleFilter[0].Initialize(&pEffectStruct->FilterSettings1);
 	SimpleFilter[1].Initialize(&pEffectStruct->FilterSettings2);
 	SimpleClipper.Initialize(&pEffectStruct->ClipperSettings);
-	SimpleReverb.Initialize(&pEffectStruct->ReverbSettings, (size_t)SampleRate);
+	SimpleReverb.Initialize(&pEffectStruct->ReverbSettings, SampleRate);
 }
 
 void

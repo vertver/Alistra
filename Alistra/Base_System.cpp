@@ -1,8 +1,3 @@
-/****************************************************************
-* MZPE Team, 2019.
-* Alistra intro
-* License: MIT
-*****************************************************************/
 #include "Base.h"
 #include <versionhelpers.h>
 #pragma comment(lib, "Version.lib")
