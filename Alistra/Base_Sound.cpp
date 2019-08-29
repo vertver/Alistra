@@ -1,3 +1,8 @@
+/****************************************************************
+* MZPE Team, 2019.
+* Alistra intro
+* License: MIT
+*****************************************************************/
 #include "Base_Sound.h"
 #include "Base_Thread.h"
 #include <audiopolicy.h>

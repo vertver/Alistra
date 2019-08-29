@@ -153,9 +153,4 @@
       <UniqueIdentifier>{ac33f018-a76a-4a29-a07c-8caac791b865}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="VoiceClass.cpp">
-      <Filter>Sound\Synth\ADSR</Filter>
-    </None>
-  </ItemGroup>
 </Project>
